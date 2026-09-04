@@ -1,0 +1,1997 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ResearchRobo ｜ エンジニアのためのベンチマーク調査ツール</title>
+<meta name="description" content="調べたいことを書くだけ。AIチャットのDeep Researchを、出典で裏づけられた証拠ベースのベンチマーク調査レポートに変える無料のプロンプトキット。登録不要・CC BY 4.0。">
+<link rel="canonical" href="https://ks278810.github.io/research-robo/">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ResearchRobo">
+<meta property="og:title" content="ResearchRobo ｜ エンジニアのためのベンチマーク調査ツール">
+<meta property="og:description" content="調べたいことを書くだけ。出典で裏づけられたベンチマーク調査レポートに変える無料のプロンプトキット。登録不要・CC BY 4.0。">
+<meta property="og:url" content="https://ks278810.github.io/research-robo/">
+<meta property="og:image" content="https://ks278810.github.io/research-robo/assets/images/ogp.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="ResearchRobo ｜ エンジニアのためのベンチマーク調査ツール">
+<meta name="twitter:description" content="調べたいことを書くだけ。出典で裏づけられたベンチマーク調査レポートに変える無料のプロンプトキット。">
+<meta name="twitter:image" content="https://ks278810.github.io/research-robo/assets/images/ogp.png">
+
+<!-- Google Analytics (GA4) — このLPのアクセス解析専用。プロンプトコピーの内容・貼り付けたレポート等（viewer.html/dispatch.html）はここには含まれず、それらのページにはこのスクリプトを入れない。
+     本番ホスト名のときだけ発火（ローカル配信・ステージングでの閲覧が本番の計測を汚染しないように） -->
+<script>
+if (location.hostname === 'ks278810.github.io') {
+  window.dataLayer = window.dataLayer || [];
+  window.gtag = function(){dataLayer.push(arguments);};
+  gtag('js', new Date());
+  gtag('config', 'G-298Y5GR72W');
+  var gaScript = document.createElement('script');
+  gaScript.async = true;
+  gaScript.src = 'https://www.googletagmanager.com/gtag/js?id=G-298Y5GR72W';
+  document.head.appendChild(gaScript);
+}
+</script>
+
+<meta name="theme-color" content="#0F2A43">
+<link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+<link rel="icon" type="image/png" sizes="512x512" href="assets/images/favicon-512.png">
+<link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   Reset
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+img { max-width: 100%; display: block; }
+a { color: inherit; text-decoration: none; transition: color 0.2s ease-out; }
+button { font: inherit; cursor: pointer; }
+ul { list-style: none; margin: 0; padding: 0; }
+
+/* ============================================================
+   Tokens
+   ============================================================ */
+:root {
+  --color-bg: #FAFBFC;
+  --color-bg-alt: #FFFFFF;
+  --color-main: #0F2A43;
+  --color-sub: #0D9488;
+  --color-sub-text: #0F766E;
+  --color-accent: #1D4ED8;
+  --color-accent-dark: #1740B0;
+  --color-text: #2D2D2D;
+  --color-heading: #0F2A43;
+  --color-mute: #6B7280;
+  --color-border: #E4E9EE;
+  --color-on-accent: #FFFFFF;
+
+  --font-heading: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+  --font-body: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+  --font-mono: "SF Mono", "Consolas", "Menlo", monospace;
+
+  --fs-h1: clamp(2rem, 1.3rem + 2.6vw, 3.625rem);
+  --fs-h2: clamp(1.5rem, 1.3rem + 1vw, 2.0625rem);
+  --fs-h3: clamp(1.1875rem, 1.1rem + 0.35vw, 1.375rem);
+  --fs-body: clamp(0.9375rem, 0.9rem + 0.2vw, 1rem);
+  --fs-small: 0.8125rem;
+
+  --container-max: 1120px;
+  --radius-sm: 10px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --shadow-sm: 0 2px 10px rgba(15, 42, 67, 0.06);
+  --shadow-md: 0 10px 28px rgba(15, 42, 67, 0.10);
+  --shadow-lg: 0 20px 48px rgba(15, 42, 67, 0.16);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+html { font-size: 16px; scroll-behavior: smooth; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  font-family: var(--font-body);
+  font-size: var(--fs-body);
+  line-height: 1.7;
+  color: var(--color-text);
+  background: var(--color-bg);
+  overflow-x: hidden;
+  word-break: normal;
+  overflow-wrap: break-word;
+  -webkit-font-smoothing: antialiased;
+}
+h1, h2, h3, h4 {
+  font-family: var(--font-heading);
+  color: var(--color-heading);
+  line-height: 1.4;
+  font-weight: 700;
+  word-break: keep-all;
+  overflow-wrap: normal;
+  line-break: strict;
+}
+h1 { font-size: var(--fs-h1); line-height: 1.3; }
+h2 { font-size: var(--fs-h2); }
+h3 { font-size: var(--fs-h3); }
+p { margin: 0; }
+.nowrap-jp { display: inline-block; white-space: nowrap; }
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+::selection { background: var(--color-accent); color: #fff; }
+
+.container {
+  max-width: var(--container-max);
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 2.5rem);
+}
+.section { padding-block: clamp(3.2rem, 2.7rem + 2.4vw, 4.8rem); }
+.section-alt { background: var(--color-bg-alt); }
+.section-head { max-width: 720px; margin-bottom: clamp(2rem, 1.7rem + 1.6vw, 2.75rem); }
+.eyebrow {
+  display: inline-block;
+  font-size: var(--fs-small);
+  font-weight: 700;
+  color: var(--color-sub-text);
+  letter-spacing: 0.06em;
+  margin-bottom: 0.65rem;
+}
+.section-head h2 { margin: 0 0 0.75rem; }
+.section-head .lead { color: var(--color-mute); font-size: 1rem; }
+
+/* ============================================================
+   Motion primitives
+   ============================================================ */
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.6s ease-out, transform 0.6s var(--ease-spring);
+  transition-delay: calc(var(--i, 0) * 90ms);
+}
+.reveal.is-visible { opacity: 1; transform: translateY(0); }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal { transition: opacity 0.3s ease-out; transform: none; transition-delay: 0ms; }
+  .reveal.is-visible { opacity: 1; }
+}
+
+/* スクロール連動（対応ブラウザのみ。非対応・reduced-motionは表示済み） */
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .howto-num {
+      animation: sd-pop linear both;
+      animation-timeline: view();
+      animation-range: entry 10% entry 75%;
+    }
+    .report-flip {
+      animation: sd-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 55%;
+    }
+    .cta-final .copy-box {
+      animation: sd-rise linear both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 50%;
+    }
+  }
+}
+@keyframes sd-pop {
+  from { transform: scale(0.5) rotate(-8deg); opacity: 0; }
+  to { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes sd-rise {
+  from { transform: translateY(52px) rotate(1deg); opacity: 0; }
+  to { transform: translateY(0) rotate(0deg); opacity: 1; }
+}
+
+/* ============================================================
+   Buttons
+   ============================================================ */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.85rem 1.5rem;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  border: none;
+  transition: transform 0.2s ease-out, background 0.2s ease-out;
+  white-space: nowrap;
+}
+.btn:hover { transform: translateY(-2px); }
+.btn:active { transform: translateY(0); }
+/* ロック中（他ボタンのコピー処理中）は押せないことを見た目でも伝える。
+   ただし自分自身が準備中／コピー直後の状態のときは薄くしない
+   （そのボタンの状態表示自体は生きているため） */
+.btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.btn:disabled:hover { transform: none; }
+.copy-btn:disabled[data-copied], .copy-btn[aria-busy="true"]:disabled { opacity: 1; cursor: default; }
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-accent), var(--color-sub-text));
+  color: var(--color-on-accent);
+  box-shadow: var(--shadow-md);
+}
+.btn-primary:hover { box-shadow: var(--shadow-lg); }
+.btn-outline {
+  background: transparent;
+  color: var(--color-main);
+  border: 1.5px solid var(--color-border);
+}
+.btn-outline:hover { border-color: var(--color-accent); color: var(--color-accent); }
+/* 「しっかり調べる」用。「手軽に試す」（青→ティール）と同格の色付きボタンにしつつ、
+   色相を変えてどちらを押したか区別できるようにする */
+.btn-primary-full {
+  background: linear-gradient(135deg, #4338CA, #7C3AED);
+  color: #fff;
+  box-shadow: var(--shadow-md);
+}
+.btn-primary-full:hover { box-shadow: var(--shadow-lg); }
+
+/* ============================================================
+   Header
+   ============================================================ */
+.site-header {
+  position: fixed;
+  inset-block-start: 0;
+  inset-inline: 0;
+  z-index: 50;
+  background: rgba(250, 251, 252, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--color-border);
+}
+.site-header .container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+  gap: 1rem;
+}
+.brand { display: flex; align-items: center; gap: 0.55rem; font-family: var(--font-heading); font-weight: 700; font-size: 1.0625rem; color: var(--color-main); }
+.brand-mark { width: 30px; height: 30px; flex-shrink: 0; }
+.nav-links { display: flex; align-items: center; gap: 1.6rem; }
+.nav-links a { font-size: 0.9rem; font-weight: 500; color: var(--color-main); }
+.nav-links a:hover { color: var(--color-accent); }
+@media (max-width: 780px) {
+  .nav-links { display: none; }
+}
+
+/* ============================================================
+   Hero
+   ============================================================ */
+.hero {
+  padding-block: clamp(5rem, 4.4rem + 2.4vw, 6rem) clamp(2.25rem, 2rem + 1.2vw, 3rem);
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-bg);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Ccircle cx='1.5' cy='1.5' r='1.5' fill='%230F2A43' fill-opacity='0.07'/%3E%3C/svg%3E");
+  background-size: 28px 28px;
+}
+.hero-blob {
+  position: absolute;
+  inset-inline-end: -12%;
+  inset-block-start: -8%;
+  width: min(48vw, 600px);
+  height: min(48vw, 600px);
+  background: radial-gradient(circle at 40% 40%, rgba(13,148,136,0.14), rgba(29,78,216,0.07) 55%, transparent 75%);
+  border-radius: 50%;
+  z-index: 0;
+  pointer-events: none;
+}
+/* 浮遊粒子背景（静的、控えめ。主役はフロー図のアニメーションに一本化） */
+.hero-particles {
+  position: absolute;
+  inset: -22%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.32;
+  background-image:
+    radial-gradient(circle, rgba(29,78,216,0.22) 2.2px, transparent 3.2px),
+    radial-gradient(circle, rgba(13,148,136,0.26) 1.8px, transparent 2.8px),
+    radial-gradient(circle, rgba(15,42,67,0.14) 1.5px, transparent 2.5px),
+    radial-gradient(circle, rgba(45,212,191,0.24) 2.4px, transparent 3.4px);
+  background-size: 340px 320px, 420px 460px, 260px 300px, 520px 480px;
+  background-position: 0 0, 120px 80px, 60px 180px, 220px 40px;
+}
+
+.hero .container { position: relative; z-index: 1; }
+
+.hero-top {
+  display: grid;
+  grid-template-columns: 1.02fr 0.98fr;
+  gap: clamp(1.75rem, 3vw, 3rem);
+  align-items: center;
+}
+@media (max-width: 780px) {
+  .hero-top { grid-template-columns: 1fr; }
+}
+
+.hero-copy .eyebrow { color: var(--color-accent); margin-bottom: 0.5rem; }
+.hero h1 { margin: 0 0 0.9rem; }
+.hero-highlight {
+  background: linear-gradient(100deg, var(--color-accent) 10%, var(--color-sub) 50%, var(--color-accent) 90%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+@supports not (background-clip: text) {
+  .hero-highlight { color: var(--color-accent); }
+}
+/* max-widthはem指定。和文1字=1emなので「1行あたり約31字」が確定し、行数が読める。
+   本文にnowrap-jpを入れると折り返しが詰められず行数が増えるため、ここでは使わない */
+.hero-sub { font-size: 0.9875rem; color: var(--color-mute); max-width: 31em; }
+
+.copy-box {
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 1.1rem 1.1rem 1rem;
+}
+/* 最下部CTAは見出し＋リード文で用が足りているので枠内の説明を持たない。
+   枠はボタンを囲むだけにし、inline-blockでボタンの実寸に合わせる */
+/* inline-blockはベースライン揃えなので、下端に行ボックス由来の隙間が出る。
+   vertical-align:top で消す */
+.cta-final .copy-box { display: inline-block; vertical-align: top; width: auto; text-align: center; padding: 0.85rem 0.9rem; }
+.copy-box-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.65rem; }
+.copy-box-label { font-size: 0.8125rem; font-weight: 700; color: var(--color-sub-text); letter-spacing: 0.04em; }
+.copy-box pre {
+  margin: 0 0 0.8rem;
+  padding: 0.85rem 0.95rem;
+  background: #0F2A43;
+  color: #E8F1FF;
+  border-radius: var(--radius-md);
+  font-family: var(--font-mono);
+  font-size: 0.71rem;
+  line-height: 1.65;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
+.copy-box pre .url { color: #7DD3C0; }
+.copy-box pre .field { color: #FBBF6B; }
+
+.main-copy-btn { width: 100%; padding-block: 0.75rem; line-height: 1.4; }
+/* 最下部CTAのボタンはヒーローと同じく均等幅（.copy-choice-item の flex に従う）。
+   以前は width:auto でラベルの字数だけで幅が決まり、2つのボタンが不揃いだった */
+.cta-final .main-copy-btn { padding-block: 1rem; font-size: 1.0625rem; }
+@media (max-width: 480px) {
+  .launch-row { flex-direction: column; }
+}
+
+.copy-btn { position: relative; overflow: hidden; }
+.copy-btn::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.25s ease-out;
+  background: radial-gradient(150px circle at var(--mx, 50%) var(--my, 50%), rgba(255,255,255,0.38), transparent 65%);
+  pointer-events: none;
+}
+@media (pointer: fine) {
+  .copy-btn:hover::after { opacity: 1; }
+}
+.copy-btn[data-copied="true"] { background: linear-gradient(135deg, #0F766E, #15803D); color: #fff; border-color: transparent; }
+.copy-note { margin: 0.55rem 0 0; font-size: 0.72rem; color: var(--color-mute); text-align: center; line-height: 1.6; }
+.cta-final .copy-note { color: rgba(255,255,255,0.72); }
+.copy-fallback { font-size: 0.75rem; color: var(--color-mute); margin-top: 0.55rem; }
+.copy-fallback a { color: var(--color-accent); text-decoration: underline; text-underline-offset: 2px; font-weight: 700; }
+.copy-fallback a:hover { color: var(--color-accent-dark); }
+.copy-fallback--light { color: rgba(255,255,255,0.65); }
+.copy-fallback--light a { color: #7DD3C0; }
+.copy-fallback--light a:hover { color: #A7F3E5; }
+/* ボタン内は7字までの短いラベルだけを入れる規則（説明は .copy-choice-note 側）。
+   折り返しを禁じて、「送｜信」のように単語の途中で割れないようにする */
+.main-copy-btn { white-space: nowrap; text-align: center; }
+[id] { scroll-margin-top: 64px; } /* 固定ヘッダー(60px)の下にアンカー先の見出しが隠れないように */
+.hero-caption { font-size: var(--fs-small); color: var(--color-mute); margin-top: 0.4rem; min-height: 1.2em; }
+
+/* ============================================================
+   Hero diagram
+   ============================================================ */
+.hero-diagram-wrap { margin-top: clamp(1.5rem, 1.3rem + 1vw, 2.25rem); position: relative; z-index: 1; }
+.arf-figure-wrap {
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: clamp(0.9rem, 1.6vw, 1.4rem);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+}
+.arf-peek {
+  position: absolute;
+  inset-block-start: -28px;
+  inset-inline-end: 26px;
+  width: 78px;
+  z-index: 2;
+  filter: drop-shadow(0 8px 12px rgba(15,42,67,0.18));
+  animation: peek-idle 7s ease-in-out infinite;
+  transform-origin: 50% 90%;
+}
+@keyframes peek-idle {
+  0%, 56% { transform: translateY(0) rotate(0deg); }
+  64% { transform: translateY(-9px) rotate(-5deg); }
+  72% { transform: translateY(-3px) rotate(3deg); }
+  80%, 100% { transform: translateY(0) rotate(0deg); }
+}
+@media (max-width: 640px) {
+  .arf-peek { width: 54px; inset-block-start: -19px; inset-inline-end: 14px; }
+}
+.arf-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.arf-scroll-hint { display: none; text-align: center; font-size: var(--fs-small); color: var(--color-mute); margin: 0.55rem 0 0; }
+@media (max-width: 640px) {
+  .arf-scroll-hint { display: block; }
+  .arf-scroll .arf-stage { min-width: 560px; }
+  .arf-scroll .arf-figure-wrap { width: fit-content; }
+}
+
+/* 4特徴キャプション（カード内下端ストリップ）
+   SVG(viewBox幅780)の4ステップ左端 x=18/212/416/610 に列を比例一致させ、
+   各キャプションが真上の要素と左揃えになるようにする */
+.arf-captions {
+  display: grid;
+  /* 先頭トラックはSVG左余白(18/780)ぶんのスペーサー。padding だと
+     %トラックの基準幅が縮んでSVGと比率が合わなくなる */
+  grid-template-columns: 2.307% 24.872% 26.154% 24.872% 21.795%;
+  gap: 0;
+  margin-top: 0.8rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+.arf-captions::before { content: ''; }
+.arf-caption {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  padding-right: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-mute);
+  line-height: 1.5;
+}
+.arf-caption-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; margin-top: 0.35em; }
+@media (max-width: 640px) {
+  .arf-captions { grid-template-columns: 1fr 1fr; gap: 0.9rem; min-width: 560px; }
+  .arf-captions::before { content: none; }
+}
+
+/* FVフォールド対策: 低いビューポート高さでは段階的に圧縮 */
+@media (min-width: 781px) and (max-height: 860px) {
+  .hero { padding-block: 4.6rem 1.75rem; }
+  :root { --fs-h1: clamp(1.8rem, 1.3rem + 1.8vw, 2.5rem); }
+  .hero-sub { font-size: 0.9rem; }
+  .copy-box pre { font-size: 0.66rem; line-height: 1.55; }
+  .copy-btn { padding-block: 0.7rem; }
+  .hero-diagram-wrap { margin-top: 1.1rem; }
+  .arf-figure-wrap { padding: 0.85rem; }
+  .arf-captions { margin-top: 0.6rem; padding-top: 0.6rem; }
+  .arf-caption { font-size: 0.7rem; }
+  .arf-peek { width: 64px; inset-block-start: -23px; }
+}
+@media (min-width: 781px) and (max-height: 775px) {
+  .hero { padding-block: 4.35rem 1.4rem; }
+  :root { --fs-h1: clamp(1.7rem, 1.25rem + 1.6vw, 2.25rem); }
+  .hero-copy .eyebrow { margin-bottom: 0.3rem; }
+  .hero h1 { margin-bottom: 0.6rem; }
+  .copy-box { padding: 0.9rem 0.95rem 0.85rem; }
+  .copy-box pre { margin-bottom: 0.65rem; }
+  .copy-fallback { font-size: 0.6875rem; margin-top: 0.35rem; }
+  .hero-caption { font-size: 0.75rem; margin-top: 0.25rem; min-height: 1em; }
+  .hero-diagram-wrap { margin-top: 0.8rem; }
+}
+
+/* ============================================================
+   ai-research-flow diagram（arf-プレフィックスでスコープ）
+   ============================================================ */
+.arf-stage {
+  --arf-sub: #94A3B8;
+  --arf-card-blue-bg: #eff6ff; --arf-card-blue-border: #1d4ed8; --arf-card-blue-text: #1e3a8a;
+  --arf-card-ind-bg: #eef2ff; --arf-card-ind-border: #1740b0; --arf-card-ind-text: #1e2a5e;
+  width: 100%;
+}
+.arf-stage svg { width: 100%; height: auto; display: block; overflow: visible; font-family: var(--font-body); }
+
+@keyframes arf-gb{0%,100%{filter:drop-shadow(0 0 0px #1d4ed8);transform:scale(1);}50%{filter:drop-shadow(0 0 16px #3b82f6) drop-shadow(0 0 28px rgba(59,130,246,.4));transform:scale(1.05);}}
+@keyframes arf-gg{0%,100%{filter:drop-shadow(0 0 0px #0d9488);transform:scale(1);}50%{filter:drop-shadow(0 0 16px #2dd4bf) drop-shadow(0 0 28px rgba(45,212,191,.4));transform:scale(1.05);}}
+@keyframes arf-gt{0%,100%{filter:drop-shadow(0 0 0px #1740b0);transform:scale(1);}50%{filter:drop-shadow(0 0 16px #5b7cfa) drop-shadow(0 0 28px rgba(91,124,250,.4));transform:scale(1.05);}}
+@keyframes arf-gr{0%,100%{filter:drop-shadow(0 0 0px #0f2a43);transform:scale(1);}50%{filter:drop-shadow(0 0 16px #3a5a78) drop-shadow(0 0 28px rgba(58,90,120,.4));transform:scale(1.05);}}
+
+.arf-gi { opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(0.9) translateY(6px); transition: opacity 0.55s ease, transform 0.55s var(--ease-spring); }
+.arf-gi.on { opacity: 1; transform: scale(1) translateY(0); }
+.arf-glow-b { animation: arf-gb 1.5s ease-in-out 1; }
+.arf-glow-g { animation: arf-gg 1.5s ease-in-out 1; }
+.arf-glow-t { animation: arf-gt 1.5s ease-in-out 1; }
+.arf-glow-r { animation: arf-gr 1.5s ease-in-out 1; }
+
+/* コネクタの線描画（pathLength=1 前提） */
+.arf-line { stroke-dasharray: 1; stroke-dashoffset: 1; }
+.arf-gi.on .arf-line { animation: arf-draw 0.85s ease-out forwards; }
+@keyframes arf-draw { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .arf-gi { transition: none; opacity: 1; transform: none; }
+  .arf-glow-b, .arf-glow-g, .arf-glow-t, .arf-glow-r { animation: none; }
+  .arf-line { stroke-dasharray: none; stroke-dashoffset: 0; animation: none; }
+  .arf-peek { animation: none; }
+}
+
+/* ============================================================
+   Problem section
+   ============================================================ */
+.problem-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.4rem; }
+.problem-card {
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 1.6rem;
+  transition: transform 0.25s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+.problem-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.8) 50%, transparent 60%);
+  transform: translateX(-130%);
+  opacity: 0;
+  pointer-events: none;
+}
+.problem-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
+@media (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  .problem-card:hover { transform: perspective(1100px) translateY(-5px) rotateX(2deg) rotateY(-1.5deg); }
+  .problem-card:hover::after { animation: shimmer-sweep 0.9s ease-out; }
+}
+@keyframes shimmer-sweep {
+  0% { transform: translateX(-130%); opacity: 1; }
+  100% { transform: translateX(130%); opacity: 0; }
+}
+.problem-mascot {
+  width: 76px; height: 76px; border-radius: 50%;
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 0.9rem;
+  overflow: hidden;
+}
+.problem-mascot img { width: 76%; }
+.problem-card h3 { margin: 0 0 0.4rem; font-size: 1.0625rem; }
+.problem-card p { color: var(--color-mute); font-size: 0.875rem; }
+@media (max-width: 600px) {
+  .problem-mascot { width: 52px; height: 52px; }
+}
+@media (max-width: 780px) { .problem-grid { grid-template-columns: 1fr; } }
+
+/* ============================================================
+   How-to section
+   ============================================================ */
+.howto-list { display: flex; flex-direction: column; gap: 0; }
+.howto-item {
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 1.5rem;
+  padding-block: 1.6rem;
+  border-top: 1px solid var(--color-border);
+  align-items: center;
+}
+.howto-item:last-child { border-bottom: 1px solid var(--color-border); }
+.howto-num {
+  width: 76px; height: 76px;
+  border-radius: 50%;
+  background: var(--color-bg);
+  border: 1.5px solid var(--color-border);
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden;
+}
+.howto-num img { width: 76%; }
+.howto-body h3 { margin: 0 0 0.35rem; }
+.howto-body p { color: var(--color-mute); }
+.howto-body .howto-meta { display: block; margin-top: 0.4rem; font-size: var(--fs-small); color: var(--color-sub-text); font-weight: 700; }
+.copy-choice { display: flex; gap: 0.9rem; flex-wrap: wrap; justify-content: center; }
+/* 注記（copy-choice-note）の文字数が版で違っても、2つのボタンが同じ大きさになるよう
+   均等幅にする（以前は注記が長い方のボタンだけ大きくなっていた） */
+.copy-choice-item { display: flex; flex-direction: column; align-items: center; gap: 0.3rem; flex: 1 1 220px; max-width: 260px; }
+.copy-choice-note { font-size: var(--fs-small); color: var(--color-sub-text); font-weight: 700; }
+@media (max-width: 520px) { .copy-choice { flex-direction: column; align-items: stretch; } .copy-choice-item .btn { width: 100%; justify-content: center; } }
+.howto-body .howto-note { margin-top: 0.55rem; font-size: var(--fs-small); line-height: 1.75; color: var(--color-text); background: var(--color-bg); border-left: 3px solid var(--color-sub); padding: 0.6rem 0.8rem; border-radius: 0 6px 6px 0; }
+@media (max-width: 600px) {
+  .howto-item { grid-template-columns: 56px 1fr; gap: 1rem; }
+  .howto-num { width: 52px; height: 52px; }
+}
+
+/* ============================================================
+   Report section（実例レポート + フリップビューア）
+   ============================================================ */
+.report-wrap { display: grid; grid-template-columns: 0.92fr 1.08fr; gap: clamp(2rem, 3vw, 3.25rem); align-items: center; }
+.stat-row { display: flex; gap: 1rem; flex-wrap: wrap; margin: 1.1rem 0 0.4rem; }
+.stat-chip {
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 0.7rem 1.05rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 96px;
+}
+.stat-num {
+  font-family: var(--font-heading);
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-accent-dark);
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
+}
+.stat-label { font-size: 0.75rem; color: var(--color-mute); font-weight: 500; }
+.report-list { list-style: none; padding: 0; margin: 1.1rem 0 1.25rem; }
+.report-list li { display: flex; gap: 0.65rem; padding-block: 0.35rem; font-size: 0.9rem; color: var(--color-text); }
+.report-list li svg { width: 17px; height: 17px; color: var(--color-sub); flex-shrink: 0; margin-top: 2px; }
+.report-caveat { font-size: var(--fs-small); color: var(--color-mute); margin-top: 0.85rem; }
+
+.report-flip { position: relative; }
+.rf-stage {
+  position: relative;
+  aspect-ratio: 1684 / 1190;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-lg);
+  background: #fff;
+  cursor: pointer;
+}
+.rf-page {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  opacity: 0;
+  transform: translateX(26px);
+  transition: opacity 0.32s ease-out, transform 0.32s ease-out;
+  pointer-events: none;
+}
+.rf-page.is-active { opacity: 1; transform: translateX(0); }
+.rf-page.rf-out-left { transform: translateX(-26px); }
+.rf-page.rf-from-left { transform: translateX(-26px); }
+@media (prefers-reduced-motion: reduce) {
+  .rf-page { transition: opacity 0.2s ease-out; transform: none; }
+  .rf-page.rf-out-left, .rf-page.rf-from-left { transform: none; }
+}
+.rf-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  background: rgba(255,255,255,0.92);
+  box-shadow: var(--shadow-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-main);
+  transition: transform 0.2s ease-out, background 0.2s ease-out;
+  z-index: 3;
+}
+.rf-nav:hover { background: #fff; transform: translateY(-50%) scale(1.08); }
+.rf-nav svg { width: 18px; height: 18px; }
+.rf-prev { left: 10px; }
+.rf-next { right: 10px; }
+.rf-expand {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+  background: rgba(255,255,255,0.92);
+  box-shadow: var(--shadow-sm);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--color-main);
+  z-index: 3;
+  transition: background 0.2s ease-out;
+}
+.rf-expand:hover { background: #fff; }
+.rf-expand svg { width: 16px; height: 16px; }
+.rf-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 0.7rem;
+  font-size: var(--fs-small);
+  color: var(--color-mute);
+}
+.rf-count { font-variant-numeric: tabular-nums; font-weight: 700; color: var(--color-main); }
+.rf-hint { font-size: 0.75rem; }
+@media (max-width: 780px) {
+  .report-wrap { grid-template-columns: 1fr; }
+  .rf-hint { display: none; }
+}
+
+/* レポート実例ライトボックス（拡大表示） */
+.rf-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(11, 32, 54, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(1rem, 4vw, 3rem);
+}
+.rf-lightbox[hidden] { display: none; }
+.rf-lightbox-inner { position: relative; max-width: min(94vw, 1200px); width: 100%; }
+.rf-lightbox-img {
+  width: 100%;
+  height: auto;
+  max-height: 86vh;
+  object-fit: contain;
+  display: block;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: var(--shadow-lg);
+  margin-inline: auto;
+}
+.rf-lb-close, .rf-lb-nav {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.12);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.2s ease-out;
+}
+.rf-lb-close:hover, .rf-lb-nav:hover { background: rgba(255,255,255,0.24); }
+.rf-lb-close { top: -46px; right: 0; width: 36px; height: 36px; }
+.rf-lb-close svg, .rf-lb-nav svg { width: 20px; height: 20px; }
+.rf-lb-nav { top: 50%; transform: translateY(-50%); width: 48px; height: 48px; }
+.rf-lb-prev { left: -64px; }
+.rf-lb-next { right: -64px; }
+@media (max-width: 900px) {
+  .rf-lb-prev { left: 6px; }
+  .rf-lb-next { right: 6px; }
+  .rf-lb-close { top: -42px; }
+}
+.rf-lb-count {
+  position: absolute;
+  bottom: -32px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.75);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ============================================================
+   FAQ
+   ============================================================ */
+.faq-item { border-bottom: 1px solid var(--color-border); }
+.faq-item summary {
+  cursor: pointer;
+  padding-block: 1.2rem;
+  font-weight: 700;
+  color: var(--color-main);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  list-style: none;
+  transition: color 0.2s ease-out;
+}
+.faq-item summary:hover { color: var(--color-accent); }
+.faq-item summary::-webkit-details-marker { display: none; }
+.faq-item summary::after {
+  content: "";
+  width: 10px; height: 10px;
+  border-right: 2px solid var(--color-sub);
+  border-bottom: 2px solid var(--color-sub);
+  transform: rotate(45deg);
+  transition: transform 0.25s ease-out;
+  flex-shrink: 0;
+  margin-inline-start: 1rem;
+}
+.faq-item[open] summary::after { transform: rotate(-135deg); }
+.faq-item p { padding-bottom: 1.2rem; color: var(--color-mute); max-width: 68ch; }
+
+/* ============================================================
+   Final CTA
+   ============================================================ */
+.cta-final {
+  background: linear-gradient(150deg, #0F2A43, #143354 60%, #0D9488);
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+.cta-glow {
+  position: absolute;
+  width: 620px; height: 620px;
+  inset-inline-end: -8%;
+  inset-block-start: -28%;
+  background: radial-gradient(circle, rgba(45,212,191,0.30), transparent 65%);
+  border-radius: 50%;
+  animation: glow-breathe 6s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+.cta-glow--2 {
+  inset-inline-end: auto;
+  inset-inline-start: -12%;
+  inset-block-start: auto;
+  inset-block-end: -40%;
+  width: 520px; height: 520px;
+  background: radial-gradient(circle, rgba(59,130,246,0.26), transparent 65%);
+  animation-delay: -3s;
+}
+@keyframes glow-breathe {
+  from { opacity: 0.4; transform: scale(1); }
+  to { opacity: 0.95; transform: scale(1.16); }
+}
+@media (prefers-reduced-motion: reduce) { .cta-glow { animation: none; } }
+.cta-final .container {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: clamp(2rem, 3vw, 3.25rem);
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+.cta-final h2 { color: #fff; }
+.cta-final .lead-light { color: rgba(255,255,255,0.78); max-width: 46ch; margin-bottom: 1.4rem; }
+.cta-final .copy-box { background: rgba(255,255,255,0.06); border-color: rgba(255,255,255,0.24); backdrop-filter: blur(6px); }
+.cta-final .copy-box pre { background: rgba(0,0,0,0.28); color: #EAF3FF; }
+.cta-final .copy-box-label { color: #7DD3C0; }
+.cta-final-visual img { width: min(100%, 170px); }
+.mascot-breathe { animation: mascot-breathe 3.2s ease-in-out infinite; }
+@keyframes mascot-breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-6px) scale(1.015); }
+}
+@media (prefers-reduced-motion: reduce) { .mascot-breathe { animation: none; } }
+@media (max-width: 780px) {
+  .cta-final .container { grid-template-columns: 1fr; }
+  .cta-final-visual { justify-self: center; }
+}
+@media (max-width: 480px) {
+  .cta-final-visual img { width: 110px; }
+}
+
+/* ============================================================
+   Footer
+   ============================================================ */
+.site-footer {
+  background: #0B2036;
+  color: rgba(255,255,255,0.72);
+  padding-block: 2.25rem;
+  font-size: 0.875rem;
+}
+.site-footer .container {
+  display: flex; flex-wrap: wrap; gap: 1rem;
+  align-items: center; justify-content: space-between;
+}
+.footer-links { display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; }
+.footer-links a:hover { color: #fff; }
+.footer-mail {
+  background: none;
+  border: none;
+  padding: 0;
+  color: rgba(255,255,255,0.72);
+  font-size: 0.875rem;
+  font-family: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(255,255,255,0.35);
+  transition: color 0.2s ease-out;
+}
+.footer-mail:hover { color: #fff; }
+
+.i { display: inline-flex; }
+.sr-only {
+  position: absolute;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+</style>
+<noscript><style>.reveal{opacity:1!important;transform:none!important}</style></noscript>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="#" class="brand" aria-label="ResearchRobo トップへ">
+      <img class="brand-mark" src="assets/images/logo-mark.svg" alt="" width="30" height="30" aria-hidden="true">
+      ResearchRobo
+    </a>
+    <nav class="nav-links" aria-label="サイト内ナビゲーション">
+      <a href="#how-to" data-scroll>使い方</a>
+      <a href="#report" data-scroll>レポート実例</a>
+      <a href="#faq" data-scroll>FAQ</a>
+      <a href="viewer.html">ビューア</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ===================== Hero ===================== -->
+<section class="hero" id="hero">
+  <div class="hero-particles" aria-hidden="true"></div>
+  <div class="hero-blob" aria-hidden="true"></div>
+  <div class="container">
+    <div class="hero-top">
+      <div class="hero-copy">
+        <span class="eyebrow">無料・登録不要</span>
+        <h1>エンジニアのための<br><span class="hero-highlight">ベンチマーク調査</span>ツール</h1>
+        <p class="hero-sub">
+          Deep Researchの回答を、出典を1件ずつ監査した証拠ベースのレポートへ。技術動向から競合調査まで。
+        </p>
+      </div>
+
+      <div class="copy-box" id="hero-copy-box">
+        <div class="copy-box-head">
+          <span class="copy-box-label">コピーして、貼って、送信するだけ</span>
+        </div>
+        <div class="copy-choice">
+          <div class="copy-choice-item">
+            <button class="btn btn-primary copy-btn main-copy-btn" type="button" data-kit="lite">手軽に試す</button>
+            <span class="copy-choice-note">チャット1つ・作業約5分</span>
+          </div>
+          <div class="copy-choice-item">
+            <button class="btn btn-primary-full copy-btn main-copy-btn" type="button" data-kit="full">しっかり調べる</button>
+            <span class="copy-choice-note">調査チャット1つ＋ビューア・作業約10分<br>（広いテーマは自動分割／容量の大きいAIで）</span>
+          </div>
+        </div>
+        <p class="copy-fallback" hidden>コピーできないときは、KITファイルを添付して送信：<a href="RESEARCH_KIT_lite_latest.md" download>手軽版</a> ／ <a href="RESEARCH_KIT_latest.md" download>フル版</a></p>
+        <p class="sr-only" aria-live="polite" id="hero-copy-status"></p>
+      </div>
+    </div>
+
+    <div class="hero-diagram-wrap" id="features">
+      <div class="arf-scroll" tabindex="0" role="region" aria-label="ワークフロー図（横にスクロールできます）">
+        <div class="arf-figure-wrap">
+          <img class="arf-peek" src="assets/images/mascot/mascot-peek.webp" alt="フロー図を覗き込むResearchRoboのロボマスコット">
+          <div class="arf-stage" id="arf-stage">
+            <svg viewBox="0 0 780 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="調べる前に軸を固める、AIが分担して網羅的に調査、根拠のある情報だけ使う、そのまま渡せるレポートに、という4段階のワークフロー図">
+            <g id="arf-b1" class="arf-gi">
+              <circle cx="93" cy="30" r="13" fill="#1d4ed8"/>
+              <text x="93" y="35" text-anchor="middle" font-size="15" font-weight="700" fill="white">1</text>
+              <text x="93" y="54" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8">調べる前に</text>
+              <text x="93" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="#1d4ed8">軸を固める</text>
+            </g>
+            <g id="arf-b2" class="arf-gi">
+              <circle cx="292" cy="30" r="13" fill="#0d9488"/>
+              <text x="292" y="35" text-anchor="middle" font-size="15" font-weight="700" fill="white">2</text>
+              <text x="292" y="54" text-anchor="middle" font-size="12" font-weight="700" fill="#0d9488">AIが分担して</text>
+              <text x="292" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="#0d9488">網羅的に調査</text>
+            </g>
+            <g id="arf-b3" class="arf-gi">
+              <circle cx="491" cy="30" r="13" fill="#1740b0"/>
+              <text x="491" y="35" text-anchor="middle" font-size="15" font-weight="700" fill="white">3</text>
+              <text x="491" y="54" text-anchor="middle" font-size="12" font-weight="700" fill="#1740b0">根拠のある</text>
+              <text x="491" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="#1740b0">情報だけ使う</text>
+            </g>
+            <g id="arf-b4" class="arf-gi">
+              <circle cx="685" cy="30" r="13" fill="#0f2a43"/>
+              <text x="685" y="35" text-anchor="middle" font-size="15" font-weight="700" fill="white">4</text>
+              <text x="685" y="54" text-anchor="middle" font-size="12" font-weight="700" fill="#0f2a43">そのまま渡せる</text>
+              <text x="685" y="70" text-anchor="middle" font-size="12" font-weight="700" fill="#0f2a43">レポートに</text>
+            </g>
+
+            <g id="arf-s1" class="arf-gi">
+              <rect x="18" y="100" width="150" height="140" rx="12" fill="var(--arf-card-blue-bg)" stroke="var(--arf-card-blue-border)" stroke-width="2"/>
+              <path d="M82,112 L96,112 L104,120 L104,140 L82,140 Z" fill="white" stroke="#c7d5ec" stroke-width="0.5"/>
+              <path d="M96,112 L96,120 L104,120 Z" fill="#c7d5ec"/>
+              <rect x="82" y="130" width="22" height="10" fill="#2B579A"/>
+              <text x="93" y="138" text-anchor="middle" font-size="7.5" font-weight="800" fill="white">W</text>
+              <text x="93" y="163" text-anchor="middle" font-size="14" font-weight="700" fill="var(--arf-card-blue-text)">仕様を</text>
+              <text x="93" y="181" text-anchor="middle" font-size="14" font-weight="700" fill="var(--arf-card-blue-text)">決める</text>
+            </g>
+            <g id="arf-hl1" class="arf-gi">
+              <rect x="43" y="196" width="100" height="24" rx="6" fill="#1d4ed8"/>
+              <text x="93" y="212" text-anchor="middle" font-size="10.5" font-weight="600" fill="white">何を・どこまで</text>
+            </g>
+
+            <g id="arf-fo-trunk" class="arf-gi">
+              <line class="arf-line" pathLength="1" x1="168" y1="170" x2="190" y2="170" stroke="var(--arf-sub)" stroke-width="2" stroke-linecap="round"/>
+              <circle cx="190" cy="170" r="3" fill="var(--arf-sub)"/>
+            </g>
+            <g id="arf-fo-branch-1" class="arf-gi">
+              <path class="arf-line" pathLength="1" d="M190,170 C201,170 201,120 212,120" fill="none" stroke="var(--arf-sub)" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M205,116 L212,120 L205,124 L207.5,120 Z" fill="var(--arf-sub)"/>
+            </g>
+            <g id="arf-fo-branch-2" class="arf-gi">
+              <line class="arf-line" pathLength="1" x1="190" y1="170" x2="205" y2="170" stroke="var(--arf-sub)" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M205,166 L212,170 L205,174 L207.5,170 Z" fill="var(--arf-sub)"/>
+            </g>
+            <g id="arf-fo-branch-3" class="arf-gi">
+              <path class="arf-line" pathLength="1" d="M190,170 C201,170 201,220 212,220" fill="none" stroke="var(--arf-sub)" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M205,216 L212,220 L205,224 L207.5,220 Z" fill="var(--arf-sub)"/>
+            </g>
+
+            <g id="arf-a1" class="arf-gi">
+              <rect x="212" y="100" width="160" height="40" rx="9" fill="#0d9488"/>
+              <rect x="222" y="111" width="20" height="16" rx="4" fill="white"/>
+              <circle cx="228.5" cy="119" r="1.6" fill="#0d9488"/>
+              <circle cx="235.5" cy="119" r="1.6" fill="#0d9488"/>
+              <path d="M228.5,123.5 Q232,125.5 235.5,123.5" fill="none" stroke="#0d9488" stroke-width="1.2" stroke-linecap="round"/>
+              <text x="294" y="125" text-anchor="middle" font-size="13" font-weight="700" fill="white">テーマAを調査</text>
+              <path d="M345,108 L355,108 L361,114 L361,132 L345,132 Z" fill="white" stroke="#bfe5e0" stroke-width="0.5"/>
+              <path d="M355,108 L355,114 L361,114 Z" fill="#bfe5e0"/>
+              <rect x="345" y="122" width="16" height="10" fill="#0f766e"/>
+              <text x="353" y="130" text-anchor="middle" font-size="4.6" font-weight="800" fill="white">レポート</text>
+            </g>
+            <g id="arf-a2" class="arf-gi">
+              <rect x="212" y="150" width="160" height="40" rx="9" fill="#0d9488"/>
+              <rect x="222" y="161" width="20" height="16" rx="4" fill="white"/>
+              <circle cx="228.5" cy="169" r="1.6" fill="#0d9488"/>
+              <circle cx="235.5" cy="169" r="1.6" fill="#0d9488"/>
+              <path d="M228.5,173.5 Q232,175.5 235.5,173.5" fill="none" stroke="#0d9488" stroke-width="1.2" stroke-linecap="round"/>
+              <text x="294" y="175" text-anchor="middle" font-size="13" font-weight="700" fill="white">テーマBを調査</text>
+              <path d="M345,158 L355,158 L361,164 L361,182 L345,182 Z" fill="white" stroke="#bfe5e0" stroke-width="0.5"/>
+              <path d="M355,158 L355,164 L361,164 Z" fill="#bfe5e0"/>
+              <rect x="345" y="172" width="16" height="10" fill="#0f766e"/>
+              <text x="353" y="180" text-anchor="middle" font-size="4.6" font-weight="800" fill="white">レポート</text>
+            </g>
+            <g id="arf-a3" class="arf-gi">
+              <rect x="212" y="200" width="160" height="40" rx="9" fill="#0d9488"/>
+              <rect x="222" y="211" width="20" height="16" rx="4" fill="white"/>
+              <circle cx="228.5" cy="219" r="1.6" fill="#0d9488"/>
+              <circle cx="235.5" cy="219" r="1.6" fill="#0d9488"/>
+              <path d="M228.5,223.5 Q232,225.5 235.5,223.5" fill="none" stroke="#0d9488" stroke-width="1.2" stroke-linecap="round"/>
+              <text x="294" y="225" text-anchor="middle" font-size="13" font-weight="700" fill="white">テーマCを調査</text>
+              <path d="M345,208 L355,208 L361,214 L361,232 L345,232 Z" fill="white" stroke="#bfe5e0" stroke-width="0.5"/>
+              <path d="M355,208 L355,214 L361,214 Z" fill="#bfe5e0"/>
+              <rect x="345" y="222" width="16" height="10" fill="#0f766e"/>
+              <text x="353" y="230" text-anchor="middle" font-size="4.6" font-weight="800" fill="white">レポート</text>
+            </g>
+
+            <g id="arf-fi" class="arf-gi">
+              <path class="arf-line" pathLength="1" d="M372,120 C383,120 383,170 394,170" fill="none" stroke="var(--arf-sub)" stroke-width="1.8" stroke-linecap="round"/>
+              <line class="arf-line" pathLength="1" x1="372" y1="170" x2="394" y2="170" stroke="var(--arf-sub)" stroke-width="1.8" stroke-linecap="round"/>
+              <path class="arf-line" pathLength="1" d="M372,220 C383,220 383,170 394,170" fill="none" stroke="var(--arf-sub)" stroke-width="1.8" stroke-linecap="round"/>
+              <circle cx="394" cy="170" r="3" fill="var(--arf-sub)"/>
+              <line class="arf-line" pathLength="1" x1="397" y1="170" x2="409" y2="170" stroke="var(--arf-sub)" stroke-width="2" stroke-linecap="round"/>
+              <path d="M409,166 L416,170 L409,174 L411.5,170 Z" fill="var(--arf-sub)"/>
+            </g>
+
+            <g id="arf-s3" class="arf-gi">
+              <rect x="416" y="100" width="150" height="140" rx="12" fill="var(--arf-card-ind-bg)" stroke="var(--arf-card-ind-border)" stroke-width="2"/>
+              <circle cx="491" cy="124" r="9" fill="none" stroke="var(--arf-card-ind-border)" stroke-width="2.5"/>
+              <line x1="497.5" y1="130.5" x2="504" y2="137" stroke="var(--arf-card-ind-border)" stroke-width="3" stroke-linecap="round"/>
+              <path d="M486,124 L490,128 L497,119" fill="none" stroke="var(--arf-card-ind-border)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <text x="491" y="163" text-anchor="middle" font-size="14" font-weight="700" fill="var(--arf-card-ind-text)">まとめて</text>
+              <text x="491" y="181" text-anchor="middle" font-size="14" font-weight="700" fill="var(--arf-card-ind-text)">証拠チェック</text>
+            </g>
+            <g id="arf-hl3" class="arf-gi">
+              <rect x="426" y="196" width="130" height="24" rx="6" fill="#1740b0"/>
+              <text x="491" y="212" text-anchor="middle" font-size="10.5" font-weight="600" fill="white">根拠なしは除外</text>
+            </g>
+
+            <g id="arf-af" class="arf-gi">
+              <line class="arf-line" pathLength="1" x1="566" y1="170" x2="602" y2="170" stroke="var(--arf-sub)" stroke-width="2" stroke-linecap="round"/>
+              <path d="M603,166 L610,170 L603,174 L605.5,170 Z" fill="var(--arf-sub)"/>
+            </g>
+
+            <g id="arf-res" class="arf-gi">
+              <rect x="610" y="100" width="150" height="140" rx="12" fill="#0f2a43"/>
+              <path d="M672,112 L686,112 L696,122 L696,140 L672,140 Z" fill="white" stroke="#c3ccd6" stroke-width="0.5"/>
+              <path d="M686,112 L686,122 L696,122 Z" fill="#c3ccd6"/>
+              <rect x="672" y="130" width="24" height="10" fill="#3E5C78"/>
+              <text x="684" y="138" text-anchor="middle" font-size="7" font-weight="800" fill="white">PDF</text>
+              <text x="685" y="175" text-anchor="middle" font-size="14" font-weight="700" fill="white">レポート完成</text>
+            </g>
+            <g id="arf-hl4" class="arf-gi">
+              <rect x="625" y="196" width="120" height="24" rx="6" fill="rgba(255,255,255,0.22)"/>
+              <text x="685" y="212" text-anchor="middle" font-size="10.5" font-weight="600" fill="white">出典リンク付き</text>
+            </g>
+            </svg>
+          </div>
+
+          <div class="arf-captions">
+            <div class="arf-caption"><span class="arf-caption-dot" style="background:#1d4ed8"></span>調査条件を確認するだけ</div>
+            <div class="arf-caption"><span class="arf-caption-dot" style="background:#0d9488"></span>調査プロンプトを自動生成</div>
+            <div class="arf-caption"><span class="arf-caption-dot" style="background:#1740b0"></span>出典の位置まで突き合わせて選別</div>
+            <div class="arf-caption"><span class="arf-caption-dot" style="background:#0f2a43"></span>出典番号つきで構成、後足しなし</div>
+          </div>
+        </div>
+      </div>
+      <p class="arf-scroll-hint">← 横にスクロールできます →</p>
+      <p class="arf-scroll-hint">図は「しっかり調べる」の流れです。「手軽に試す」は1つのチャットの中で、同じ考え方の工程を簡略化して進みます。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== Problem ===================== -->
+<section class="section" id="problem">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">課題</span>
+      <h2>素の Deep Research で起きていること</h2>
+      <p class="lead">AIに調べさせるだけでは、こうしたすれ違いがよく起きます。</p>
+    </div>
+    <div class="problem-grid">
+      <div class="problem-card reveal" style="--i:0">
+        <div class="problem-mascot" aria-hidden="true">
+          <img src="assets/images/mascot/mascot-confused.webp" alt="">
+        </div>
+        <h3>出典があいまいなまま</h3>
+        <p>どの資料の、どの記述にもとづくのかが分からないまま、結論だけが返ってくる。</p>
+      </div>
+      <div class="problem-card reveal" style="--i:1">
+        <div class="problem-mascot" aria-hidden="true">
+          <img src="assets/images/mascot/mascot-dizzy.webp" alt="">
+        </div>
+        <h3>一度の検索で終わる</h3>
+        <p>複数の切り口を横断できず、本来確認すべき情報の抜け漏れに気づけない。</p>
+      </div>
+      <div class="problem-card reveal" style="--i:2">
+        <div class="problem-mascot" aria-hidden="true">
+          <img src="assets/images/mascot/mascot-block.webp" alt="">
+        </div>
+        <h3>調べきれていないのに「ない」と断定</h3>
+        <p>検索で見つからなかっただけの情報が、いつのまにか「存在しない」という言い切りに変わってしまう。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== How to use ===================== -->
+<section class="section section-alt" id="how-to">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">使い方</span>
+      <h2>使い方</h2>
+      <p class="lead">コピーしたあとは、AIチャットとのやり取りだけで進みます。</p>
+    </div>
+    <div class="howto-list">
+      <div class="howto-item">
+        <div class="howto-num"><img src="assets/images/mascot/mascot-clipboard.webp" alt="クリップボードを持つResearchRoboのロボマスコット"></div>
+        <div class="howto-body reveal">
+          <h3>1. コピーして、貼って、送信（共通）</h3>
+          <p>「手軽に試す」か「しっかり調べる」を選んでコピーし、AIチャットに貼り付けて送信するだけ。調べたいテーマを聞かれるので、一文で答えます。</p>
+          <span class="howto-meta">手軽に試す＝作業約5分・Deep Researchなしで完結（任意で使うことも可） ／ しっかり調べる＝作業約10分・Deep Research 1回〜（広いテーマ・検証追加で最大8回）</span>
+        </div>
+      </div>
+      <div class="howto-item">
+        <div class="howto-num"><img src="assets/images/mascot/mascot-point.webp" alt="指差しをするResearchRoboのロボマスコット"></div>
+        <div class="howto-body reveal">
+          <h3>2. 手軽に試す：「OK」→太字の言葉を返すだけ</h3>
+          <p>条件を確認したら「OK」と返信します。<strong>同じチャットの中で</strong>調査が実行されます。あとは画面に太字で出る言葉（「次」「レポート」など）をそのまま返すだけで、レポートがコードブロックで届きます。届いた順に<a href="viewer.html">ビューア</a>へ貼ると、その場でPDFにできます。</p>
+        </div>
+      </div>
+      <div class="howto-item">
+        <div class="howto-num"><img src="assets/images/mascot/mascot-report.webp" alt="レポートを掲げるResearchRoboのロボマスコット"></div>
+        <div class="howto-body reveal">
+          <h3>3. しっかり調べる：調査チャットで実行し、結果を戻す</h3>
+          <p><strong>確認する</strong>：目的・対象・本数を確認し「OK」。調査プロンプトが届きます。<br>
+          <strong>開く</strong>：プロンプトを新しいチャットに貼り、Deep Researchで実行。<br>
+          <strong>渡す</strong>：出てきたレポートを丸ごと最初のチャットへそのまま貼ります。<br>
+          <strong>受け取る</strong>：レポートはコードブロックで分けて届きます。届くごとに「次」と返信。<br>
+          <strong>仕上げ</strong>：届いた順に<a href="viewer.html">ビューア</a>へ貼ると結合・検証され、PDFで保存できます。</p>
+          <p class="howto-note">最初のチャットはDeep Researchを使わないので、<a href="https://aistudio.google.com/" target="_blank" rel="noopener">Google AI Studio</a>やGemini・Claudeなど容量の大きいものを使ってください（調査チャットは容量が小さくてもよく、ChatGPT無料版でも可）。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== Report（実例 + フリップビューア） ===================== -->
+<section class="section" id="report">
+  <div class="container report-wrap">
+    <div class="reveal">
+      <span class="eyebrow">レポート実例</span>
+      <h2>そのまま渡せるレポートに</h2>
+      <div class="stat-row">
+        <div class="stat-chip"><span class="stat-num" data-count="13">0</span><span class="stat-label">調査対象OEM</span></div>
+        <div class="stat-chip"><span class="stat-num" data-count="122">0</span><span class="stat-label">公開資料</span></div>
+        <div class="stat-chip"><span class="stat-num" data-count="319">0</span><span class="stat-label">確認事実</span></div>
+      </div>
+      <ul class="report-list">
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>A4横向き、読みやすい日本語フォントで構成</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>本文・表に論文形式の引用番号を付与</li>
+        <li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>参考文献の一覧から原資料へリンク</li>
+      </ul>
+      <a class="btn btn-outline" href="benchmark-report-sample.pdf" target="_blank" rel="noopener">実例レポートをPDFで見る・15ページ</a>
+      <p class="report-caveat">※ Research KITで実際に作成した衝突安全ベンチマーク調査レポートの公開版です。企業名はA社〜M社にマスキングしています。A4横・引用番号つきというレポート書式はKIT本文に定義済みで、追加ファイルなしで再現されます。</p>
+    </div>
+    <div class="report-flip" id="report-flip">
+      <div class="rf-stage" id="rf-stage" tabindex="0" role="group" aria-roledescription="ページめくりビューア" aria-label="実例レポートのページめくりビューア。左右の矢印キーでページを移動できます">
+        <img class="rf-page is-active" id="rf-page-a" src="assets/report/page-01.webp" alt="ベンチマーク調査レポート実例 1ページ目">
+        <img class="rf-page" id="rf-page-b" src="assets/report/page-02.webp" alt="" aria-hidden="true">
+        <button class="rf-nav rf-prev" id="rf-prev" type="button" aria-label="前のページ">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <button class="rf-nav rf-next" id="rf-next" type="button" aria-label="次のページ">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+        </button>
+        <button class="rf-expand" id="rf-expand" type="button" aria-label="拡大表示">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/></svg>
+        </button>
+      </div>
+      <div class="rf-bar">
+        <span class="rf-count" id="rf-count" aria-live="polite">1 / 15</span>
+        <span class="rf-hint">クリックまたは矢印キーでページをめくれます</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="rf-lightbox" id="rf-lightbox" role="dialog" aria-modal="true" aria-label="実例レポート拡大表示" hidden>
+  <div class="rf-lightbox-inner">
+    <button class="rf-lb-close" id="rf-lb-close" type="button" aria-label="閉じる">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+    <button class="rf-lb-nav rf-lb-prev" id="rf-lb-prev" type="button" aria-label="前のページ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <img class="rf-lightbox-img" id="rf-lightbox-img" src="" alt="">
+    <button class="rf-lb-nav rf-lb-next" id="rf-lb-next" type="button" aria-label="次のページ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 6l6 6-6 6"/></svg>
+    </button>
+    <span class="rf-lb-count" id="rf-lb-count" aria-live="polite">1 / 15</span>
+  </div>
+</div>
+
+<!-- ===================== FAQ ===================== -->
+<section class="section section-alt" id="faq">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">FAQ</span>
+      <h2>よくある質問</h2>
+    </div>
+    <div>
+      <details class="faq-item reveal" style="--i:0">
+        <summary>無料ですか</summary>
+        <p>はい。CC BY 4.0のもとに公開しており、登録もアカウントも不要です。</p>
+      </details>
+      <details class="faq-item reveal" style="--i:1">
+        <summary>「手軽に試す」と「しっかり調べる」の違いは</summary>
+        <p><strong>手軽に試す</strong>は、1つのチャットの中で調査からレポートまで終わります。テーマを答えて「OK」、あとは「次」と返信していくだけです。作業約5分。Deep Researchは使いません（調査条件の確認で「Deep Researchを使う」に変えると、別チャットで実行するプロンプトが届きます）。1つのチャットに調査結果とレポートの両方を置くため、容量の大きいAIを使ってください。</p>
+        <p><strong>しっかり調べる</strong>は、確認した調査条件から1本の調査プロンプトを作り、別のチャットのDeep Researchで実行します（対象が多い広いテーマでは自動で数本に分け、その理由を示します）。結果を最初のチャットに戻し、集めた証拠を、レポートの草稿を見せずに監査する工程も入ります（必要な場合だけ別チャットで検証を追加します）。作業約10分。最初のチャットに全結果を集めるので、容量の大きいAIが向いています。</p>
+        <p>どちらも同じビューアでPDFにでき、出典番号と参考文献リストが付きます。迷ったら「手軽に試す」から始めて、物足りなければ同じテーマで「しっかり調べる」を実行してください。</p>
+      </details>
+      <details class="faq-item reveal" style="--i:2">
+        <summary>どのAIチャットで使えますか</summary>
+        <p><strong>手軽に試す</strong>：Web検索ができるAIチャットが1つあれば動きますが、調査結果とレポートを同じチャットに置くため、容量の大きいAI（Google AI Studio・Gemini・Claude、または各サービスの有料プラン）を前提にしてください。容量の小さいチャットでは、資料が多いと途中で手順書が失われ、最後まで到達できないことがあります。</p>
+        <p><strong>しっかり調べる</strong>：チャットの役割が2つあり、必要な条件が違います。</p>
+        <p>❶ <strong>最初のチャット</strong>：全結果を集めてレポートを書くので、容量の大きいAIが向いています。Google AI Studio・Gemini・Claudeのほか、Web接続のない社内AIでも使えます。<br>
+          ❷ <strong>調査チャット</strong>：Deep Researchが必要ですが、容量は小さくて構いません。ChatGPT無料版でも使えます。</p>
+        <p>ChatGPT無料版だけで「しっかり調べる」は通りません（フル版の手順書は無料版の容量に収まらず、貼り付けた時点で前半が失われます）。「手軽に試す」も、資料が多い調査では同じ理由で途中で失敗します。どちらもGoogle AI Studio・Gemini・Claudeなど容量の大きいAIをお使いください。</p>
+        <p>Geminiで長文の貼り付けが失敗するときは、KITファイルを添付してください：<a href="RESEARCH_KIT_lite_latest.md" download>手軽版</a> ／ <a href="RESEARCH_KIT_latest.md" download>フル版</a></p>
+      </details>
+      <details class="faq-item reveal" style="--i:3">
+        <summary>個別の調査プロンプトを貼ると、指定の形式ではなくレポートや文書になります</summary>
+        <p>これは想定内の動作です（多くのAIのDeep Researchはレポート形式で返すことがあります）。<strong>そのレポートを丸ごと最初のチャットへそのまま貼ってください。</strong>最初のチャットが資料・主張・未確認事項の一覧に変換して取り込みます。レポートに出典URLがほとんど無い場合だけ、最初のチャットが「調査チャットに『一覧』と送ってください」と案内します。あわせて、Deep Research（サービスによっては「リサーチ」等の名称）モードがオンになっているかも確認してください。オフのままだと通常のチャット応答になり、Web調査自体が行われません。</p>
+      </details>
+      <details class="faq-item reveal" style="--i:4">
+        <summary>AIの応答が途中で止まってしまいました</summary>
+        <p>「続けて統合を行います」のような文だけで応答が終わった場合は、「続けて」と一言送ってください。そのまま次の工程へ進みます。レポートが途中で切れた場合は、<a href="viewer.html">ビューア</a>が「PART 2 を出し直して」のように送る文を表示します。その文をそのまま最初のチャットへ送り、届いたコードブロックをビューアに貼り直してください。</p>
+      </details>
+      <details class="faq-item reveal" style="--i:5">
+        <summary>なぜ調査は別のチャットで実行するのですか</summary>
+        <p>多くのAIチャットは、同じ会話の中でDeep Research（リサーチモード）を2回目以降続けて起動できない、または不安定になることが確認されています。そのため調査プロンプトごとに新しいチャットを開いていただく方式にしています。広いテーマでは調査プロンプトが数本に分かれることがあり、その場合は同時に開いて並行実行すると待ち時間を短縮できます。ChatGPTは入力欄の「＋」または「ツール」から「Deep research」、Geminiはツール一覧の「Deep Research」、Claudeは「リサーチ」から選択します（メニューの位置は各社の仕様変更により変わることがあります）。</p>
+      </details>
+      <details class="faq-item reveal" style="--i:6">
+        <summary>レポートはどうやってPDFにするのですか</summary>
+        <p>レポートは最初のチャットが複数のコードブロックに分けて返します。<a href="viewer.html">ビューア</a>へ順に貼り付けると自動で結合して整え、機械的に直せる不備（重複した参考文献の統合など）はその場で修復したうえで、残る不備だけを表示します。そのままプレビューと「PDFとして保存」ができます（貼り付けた内容はお使いのブラウザ内だけで処理され、どこにも送信されません）。AIチャット自体の「ダウンロード」機能ではなく、ビューアの「HTMLをダウンロード」「PDFとして保存」を使ってください。</p>
+      </details>
+      <details class="faq-item reveal" style="--i:7">
+        <summary>ビューアで不備が出たときのやり直し方は</summary>
+        <p>ビューアの「不備をコピー」を押し、最初のチャットへ貼り付けてください。該当のコードブロックだけが修正されて出てくるので、<strong>それをビューアの貼り付け欄にそのまま貼ります</strong>。「クリア」を押す必要はありません。同じ番号のコードブロックは自動で置き換わります。レポートのファイルを添付し直す必要もありません（最初のチャットが調査記録を保持しているので、その部分だけ出し直すのが最短で、ファイルのやりとりは文字化けの原因にもなります）。赤い項目が消えれば完成です。<strong>黄色（参考）は残っていても構いません</strong>——そのままPDFにできます。</p>
+      </details>
+      <details class="faq-item reveal" style="--i:8">
+        <summary>ベンチマーク調査以外にも使えますか</summary>
+        <p>使えます。Research KITは調査工程そのものを定義した汎用のキットなので、競合製品の比較、技術動向、規制・標準の調査など、テーマを書けばそのまま動きます。複数対象を横断して事実を突き合わせるベンチマーク型の調査で、特に力を発揮します。</p>
+      </details>
+      <details class="faq-item reveal" style="--i:9">
+        <summary>どれくらい時間がかかりますか</summary>
+        <p>手を動かす作業は「手軽に試す」約5分・「しっかり調べる」約10分です。「手軽に試す」はDeep Researchを使わないため、これで完了します。「しっかり調べる」はこれとは別にDeep Researchの調査待ち（AIが自動で進める時間・通常1回）が加わり、テーマの規模によっては分割や検証用の調査が自動で追加され、その分延びます。対象や環境、Deep Research側の混雑状況によっても前後します。</p>
+      </details>
+      <details class="faq-item reveal" style="--i:10">
+        <summary>Deep Researchの利用回数は消費しますか</summary>
+        <p>はい。ResearchRobo自体はプロンプトであり、Deep Research機能の実行回数や利用枠は、使用しているAIサービス側の制限にそのまま従います。「手軽に試す」は「Deep Research：使わない」のままなら消費しません。「しっかり調べる」は通常1回消費します（広いテーマの分割や検証の自動追加で2〜8回になることがあります）。無料プランは実行枠が少なく、1回の調査で足りなくなることがあります。その場合は、枠が回復してから残りのチャットを実行し、結果が出そろい次第まとめて貼り戻せば問題なく続けられます。結果が長くて分割出力になり「次」を送ったり、同じチャットに「追加抽出」を送ったりしても、それは同じチャット内の追加メッセージなので、Deep Researchの実行回数を追加で消費しません。</p>
+      </details>
+      <details class="faq-item reveal" style="--i:11">
+        <summary>2回目以降の調査はもっと簡単にできますか</summary>
+        <p>できます。ファイルや指示を保持できる作業スペース機能があるAIチャットなら、KITファイルを一度登録しておくと、2回目以降は毎回貼り付ける必要がなくなり、調査テーマを伝えるだけで始められます。任意の使い方で、必須ではありません。登録済みの場所で新しい調査を始めるときは、KIT本文抜きの短い起動文だけをコピーして送れます：<button class="btn btn-outline copy-btn copy-btn--short" type="button" style="margin-top:0.5rem;">起動文だけコピー</button><span class="sr-only" aria-live="polite" id="faq-copy-status"></span></p>
+      </details>
+      <details class="faq-item reveal" style="--i:12">
+        <summary>内容を改変して配布してもいいですか</summary>
+        <p>CC BY 4.0のもとで、クレジット表記をすれば改変・再配布ができます。表記に必要な情報（著作者名・ライセンス・出典URL）は、KIT本文冒頭のLicense行にまとめてあります。</p>
+      </details>
+      <details class="faq-item reveal" style="--i:13">
+        <summary>結果の正確性は保証されますか</summary>
+        <p>KITは出典を突き合わせる監査の工程を組み込んでいますが、最終的な事実確認はご自身でも行ってください。</p>
+      </details>
+      <details class="faq-item reveal" style="--i:14">
+        <summary>調査ワークベンチ（dispatch.html）は何に使いますか</summary>
+        <p>標準の手順では使いません。上級者向けの任意ツールとして残しています（<a href="dispatch.html">dispatch.html</a>）。調査プロンプトを並べて実行状況を管理したり、結果の件数を貼る前に確認したりする用途に使えます。</p>
+      </details>
+      <details class="faq-item reveal" style="--i:15">
+        <summary>このサイトはアクセス解析をしていますか</summary>
+        <p>この紹介ページ（index.html）だけ、訪問状況の把握のためGoogle Analyticsを使っています。調査プロンプトのコピー内容や、<a href="viewer.html">ビューア</a>などの作業ページに貼り付けた調査テーマ・レポートの中身は対象外で、それらのページにはこの計測を入れていません（ブラウザ内だけで処理され、どこにも送信されません）。</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== Final CTA ===================== -->
+<section class="section cta-final" id="cta-final">
+  <div class="cta-glow" aria-hidden="true"></div>
+  <div class="cta-glow cta-glow--2" aria-hidden="true"></div>
+  <div class="container">
+    <div class="reveal">
+      <h2>今すぐ試す</h2>
+      <p class="lead-light">コピーして貼るだけで始められます。</p>
+      <div class="copy-box">
+        <div class="copy-choice">
+          <div class="copy-choice-item">
+            <button class="btn btn-primary copy-btn main-copy-btn" type="button" data-kit="lite">手軽に試す</button>
+            <span class="copy-choice-note">チャット1つ・作業約5分</span>
+          </div>
+          <div class="copy-choice-item">
+            <button class="btn btn-primary-full copy-btn main-copy-btn" type="button" data-kit="full">しっかり調べる</button>
+            <span class="copy-choice-note">調査チャット1つ＋ビューア・作業約10分<br>（広いテーマは自動分割／容量の大きいAIで）</span>
+          </div>
+        </div>
+        <p class="copy-fallback copy-fallback--light" hidden>コピーできないときは、KITファイルを添付して送信：<a href="RESEARCH_KIT_lite_latest.md" download>手軽版</a> ／ <a href="RESEARCH_KIT_latest.md" download>フル版</a></p>
+        <p class="sr-only" aria-live="polite" id="cta-copy-status"></p>
+      </div>
+    </div>
+    <div class="cta-final-visual reveal" style="--i:1">
+      <img class="mascot-breathe" src="assets/images/mascot/mascot-wave.webp" alt="手を振るResearchRoboのロボマスコット">
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <span style="display:inline-flex;align-items:center;gap:0.6rem;">
+      <img src="assets/images/logo-mark.svg" alt="" width="20" height="20" aria-hidden="true" style="border-radius:6px;">
+      &copy; 2026 Kohei Shintani, Ph.D. ／ Research KIT v5.2
+    </span>
+    <div class="footer-links">
+      <a href="https://creativecommons.org/licenses/by/4.0/deed.ja" target="_blank" rel="noopener">CC BY 4.0</a>
+      <button class="footer-mail" id="footer-mail" type="button" aria-label="メールアドレスをコピー">お問い合わせ: mailad4me@gmail.com</button>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  "use strict";
+
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---- スムーススクロール（ナビゲーション） ---- */
+  document.querySelectorAll('[data-scroll]').forEach(function (el) {
+    el.addEventListener('click', function (e) {
+      var target = document.querySelector(el.getAttribute('href'));
+      if (target) {
+        e.preventDefault();
+        target.scrollIntoView({ behavior: reduced ? 'auto' : 'smooth', block: 'start' });
+      }
+    });
+  });
+
+  /* ---- スクロールリビール ----
+     ここより前のIIFE内コードで例外が起きると、この登録自体に到達できず
+     使い方・FAQ・CTAが opacity:0 のまま操作だけはできる状態になってしまう。
+     try/catchで囲み、失敗時は即座に全部見える状態にフォールバックする */
+  try {
+    var revealEls = document.querySelectorAll('.reveal');
+    if ('IntersectionObserver' in window && !reduced) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('is-visible');
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.15, rootMargin: '0px 0px -8% 0px' });
+      revealEls.forEach(function (el) { io.observe(el); });
+    } else {
+      revealEls.forEach(function (el) { el.classList.add('is-visible'); });
+    }
+  } catch (e) {
+    document.querySelectorAll('.reveal').forEach(function (el) { el.classList.add('is-visible'); });
+  }
+
+  /* ---- カウントアップ（レポート実数、threshold 0.85） ---- */
+  var statEls = document.querySelectorAll('.stat-num[data-count]');
+  function setFinal(el) { el.textContent = el.getAttribute('data-count'); }
+  if ('IntersectionObserver' in window && !reduced) {
+    var statIo = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (!entry.isIntersecting) return;
+        statIo.unobserve(entry.target);
+        var el = entry.target;
+        var target = parseInt(el.getAttribute('data-count'), 10);
+        var start = null;
+        var dur = 900;
+        function tick(ts) {
+          if (!start) start = ts;
+          var p = Math.min(1, (ts - start) / dur);
+          var eased = 1 - Math.pow(1 - p, 3);
+          el.textContent = String(Math.round(target * eased));
+          if (p < 1) requestAnimationFrame(tick);
+        }
+        requestAnimationFrame(tick);
+      });
+    }, { threshold: 0.85 });
+    statEls.forEach(function (el) { statIo.observe(el); });
+  } else {
+    statEls.forEach(setFinal);
+  }
+
+  /* ---- コピー: KIT本文を末尾に同梱する（外部URLフェッチに依存しない） ----
+     過去にChatGPT向け「URL参照の短文プロンプト」方式を試したが、ChatGPT
+     自身のURL取得は多くの場合Bingのインデックス/キャッシュ経由で、
+     デプロイ直後は「未インデックスの新URL」として取得失敗することを
+     実地確認した（2026-08-25）。また添付ファイル方式は、ファイルを
+     添付するだけでは多くのAIが「要約しますか？」等の一般応答を返すだけで
+     動作を開始しないため、添付＋別途の指示文コピーという2手が必要だった。
+
+     どちらも「AI側の外部リソース取得能力」に依存する設計だった。この
+     依存を断つため、KIT本文はコピー時にこちら側のJSでfetchし、案内文と
+     結合してクリップボードへ直接書き込む方式に統一する。ユーザーは
+     結合済みの全文をそのままAIチャットへ貼り付けるだけでよく、ChatGPT /
+     Claude / Gemini / 社内AIを問わず同じ1つのボタン・同じコピー内容で
+     動作する（Geminiのみ長文貼り付けが不安定な場合があり、その場合だけ
+     ファイル添付にフォールバックする。FAQ「どのAIチャットで使えますか」参照）。
+
+     fetch先はバージョン番号を含まない「RESEARCH_KIT_latest.md」固定URLに
+     すること。同一オリジンへのfetchなので検索エンジンのインデックス状況に
+     左右されず、常に即時に成功する。 */
+  /* KITは2種類ある。ボタンの data-kit で取得先を切り替える（既定はフル版）。
+     いずれもバージョン番号を含まない固定URLなので、版を上げてもここは変えない */
+  var KIT_FULL = 'RESEARCH_KIT_latest.md';
+  var KIT_LITE = 'RESEARCH_KIT_lite_latest.md';
+  var kitTextCache = {};
+  var kitTextPromise = {}; /* 進行中のfetchをファイル別に共有し、二重取得を防ぐ */
+  var KIT_FETCH_TIMEOUT = 10000;
+  /* 指定ミリ秒で解決/拒否しなければ失敗させる。回線がハングしたとき、コピー
+     ボタンが（ロック中の他ボタンも道連れで）永久にコピー中のままにならないため */
+  function withTimeout(p, ms) {
+    return new Promise(function (resolve, reject) {
+      var timer = setTimeout(function () { reject(new Error('timeout')); }, ms);
+      p.then(function (v) { clearTimeout(timer); resolve(v); }, function (e) { clearTimeout(timer); reject(e); });
+    });
+  }
+  function fetchKitText(file) {
+    file = file || KIT_FULL;
+    if (kitTextCache[file]) return Promise.resolve(kitTextCache[file]);
+    if (kitTextPromise[file]) return kitTextPromise[file];
+    var ctrl = (typeof AbortController === 'function') ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, KIT_FETCH_TIMEOUT) : 0;
+    /* withTimeoutはfetch()自体だけでなく r.text()（本文の読み込み）まで含めて
+       包む。ヘッダーは届いたのに本文ストリームが止まった回線では、fetch()の
+       Promiseはすでに解決済みなのでAbortControllerのabort()は本文読み込みを
+       止めてくれない——r.text()を外に出すと無期限にハングし、コピーボタンが
+       （ロック中の他ボタンも道連れで）永久に「準備中…」のまま戻らなくなる */
+    var chain = fetch(file, ctrl ? { signal: ctrl.signal } : undefined).then(function (r) {
+      clearTimeout(timer);
+      if (!r.ok) throw new Error('fetch failed: ' + r.status);
+      return r.text();
+    });
+    kitTextPromise[file] = withTimeout(chain, KIT_FETCH_TIMEOUT).then(function (t) {
+      kitTextCache[file] = t;
+      return t;
+    }).catch(function (e) {
+      clearTimeout(timer);
+      kitTextPromise[file] = null; /* 失敗時は次のクリックで再試行できるようにする */
+      throw e;
+    });
+    return kitTextPromise[file];
+  }
+  /* 初回描画と帯域を奪わないよう、KIT本文（合計約136KB）の先読みはアイドル時か
+     ボタンに触れた時点まで遅らせる。SafariのClipboardItem経路はクリックの文脈で
+     Promiseを解決するため先読み必須ではないが、モバイルはhoverが無いので
+     アイドル先読みも併用する */
+  var kitWarmed = false;
+  function warmKits() {
+    if (kitWarmed) return;
+    kitWarmed = true;
+    fetchKitText(KIT_FULL).catch(function () {});
+    fetchKitText(KIT_LITE).catch(function () {});
+  }
+  if (window.requestIdleCallback) requestIdleCallback(warmKits, { timeout: 4000 });
+  else setTimeout(warmKits, 2500);
+
+  /* 2回目以降（KITを作業スペースに登録済み）向け: KIT本文を含まない起動文だけ */
+  function buildShortPromptText() {
+    return [
+      '登録済みのResearch KIT手順書に従って動作すること。フル版とライト版の両方が登録されている場合は、どちらを使うかを最初に1問で確認すること。',
+      '最初の返信では、手順書の最初の指示（調査テーマを1文で尋ねる）に従うこと。'
+    ].join('\n');
+  }
+
+  function buildFullPromptText(kitText, isLite) {
+    /* 貼り付け時、ChatGPTは先頭が見える。末尾にも同じ案内を置き、
+       どちらから読んでも「このまま送信すればよい」と伝わるようにする。
+       テーマはAI側から質問させ、プレースホルダ探しの手間をなくす。
+       末尾確認用の見出しはKIT別・各KIT本体の最後の章見出し（フル版は# 21.、ライト版は# 6.）——
+       共通の見出しで確認するとライト版が偽の容量エラーを出して自分自身を案内するループになる。
+       2026-09-03(完成前の最終洗い出し・C6): 旧フル版の見出しは# 0. Mode Routerで、これは
+       KIT冒頭付近（本体の40%未満の位置）にあるため、貼り付けが途中で切れていても検出
+       できなかった（末尾確認用のはずが末尾を確認していなかった）。最終章の見出しに直す。 */
+    var tailHeading = isLite ? '# 6. うまくいかないときの対処' : '# 21. 最重要ルールの再掲（末尾・省略不可）';
+    return [
+      '以下はResearch KIT本文。この手順書に従って動作すること。',
+      '最初の返信では、手順書の最初の指示（調査テーマを1文で尋ねる）に従うこと。',
+      '',
+      '===== Research KIT ここから =====',
+      kitText.trim(),
+      '===== Research KIT ここまで =====',
+      '',
+      '▲ ここまでがプロンプト。編集せずこのまま送信してください。',
+      '',
+      '【最初に1回だけ確認】この手順書の冒頭「# Research KIT」の行と「' + tailHeading + '」が、あなたの文脈に残っているか確認すること。'
+        + '残っていなければ手順書が途中までしか届いていない（このチャットの文脈上限を超えた）。'
+        + 'その場合は調査を始めず、次の1文だけを返して止まること: '
+        + '「この手順書はこのチャットの容量に収まりませんでした。'
+        + (isLite
+            ? '文脈の大きいAI（Google AI Studio・Gemini・Claude など）で新しいチャットを開いて貼り直してください。」'
+            : '文脈の大きいAI（Google AI Studio・Gemini・Claude など）で新しいチャットを開いて貼り直すか、1チャットで完結する軽量版（ https://ks278810.github.io/research-robo/RESEARCH_KIT_lite_latest.md ）をお使いください。」')
+    ].join('\n');
+  }
+
+  function fallbackCopy(text) {
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  /* ---- 紙吹雪バースト（コピー成功時、1回きり・約1.1秒） ---- */
+  function confettiBurst(x, y) {
+    if (reduced) return;
+    var canvas = document.createElement('canvas');
+    canvas.setAttribute('aria-hidden', 'true');
+    canvas.style.cssText = 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:90;';
+    var dpr = Math.min(2, window.devicePixelRatio || 1);
+    canvas.width = window.innerWidth * dpr;
+    canvas.height = window.innerHeight * dpr;
+    document.body.appendChild(canvas);
+    var ctx = canvas.getContext('2d');
+    /* canvasブロック系の拡張機能等でgetContextがnullを返すことがある。演出が
+       出ないだけで済ませ、コピー成功の扱い自体は変えない（呼び出し側でtry/catch済み） */
+    if (!ctx) { canvas.remove(); return; }
+    ctx.scale(dpr, dpr);
+    var colors = ['#1D4ED8', '#0D9488', '#2DD4BF', '#F59E0B', '#0F2A43'];
+    var parts = [];
+    for (var i = 0; i < 32; i++) {
+      var angle = (Math.PI * 2 * i) / 32 + Math.random() * 0.4;
+      var speed = 3.2 + Math.random() * 4.6;
+      parts.push({
+        x: x, y: y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed - 3.4,
+        size: 4 + Math.random() * 5,
+        color: colors[i % colors.length],
+        rot: Math.random() * Math.PI,
+        vr: (Math.random() - 0.5) * 0.3,
+        circle: Math.random() < 0.35
+      });
+    }
+    var start = null;
+    var DUR = 1100;
+    function frame(ts) {
+      if (!start) start = ts;
+      var t = ts - start;
+      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      var fade = 1 - Math.max(0, (t - 650) / (DUR - 650));
+      parts.forEach(function (p) {
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.26;
+        p.vx *= 0.985;
+        p.rot += p.vr;
+        ctx.save();
+        ctx.globalAlpha = Math.max(0, fade);
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.fillStyle = p.color;
+        if (p.circle) {
+          ctx.beginPath();
+          ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+          ctx.fill();
+        } else {
+          ctx.fillRect(-p.size / 2, -p.size / 2, p.size, p.size * 0.62);
+        }
+        ctx.restore();
+      });
+      if (t < DUR) requestAnimationFrame(frame);
+      else canvas.remove();
+    }
+    requestAnimationFrame(frame);
+    /* タブが非表示だとrAFが実質止まり、canvas.remove()まで到達しない。
+       バックグラウンドのままでも一定時間後に確実に片付ける保険 */
+    setTimeout(function () { canvas.remove(); }, DUR + 200);
+  }
+
+  /* 「しっかり調べる」→「手軽に試す」と続けて押すと、後から解決したfetchが
+     クリップボードを上書きし、両方のボタンが成功表示になっていた。コピー中は
+     すべてのコピーボタンを止める */
+  var copyBtns = document.querySelectorAll('.copy-btn');
+  /* コピー中にロックするのはKIT本文を含む4ボタンだけ。起動文だけコピーの
+     ボタンはfetchを待たないので、他が固まっていても押せて当然 */
+  var lockBtns = document.querySelectorAll('.copy-btn.main-copy-btn');
+  var copyBusy = false;
+  function setCopyBusy(b) {
+    copyBusy = b;
+    lockBtns.forEach(function (x) { x.disabled = b; });
+  }
+  ['pointerenter', 'focus', 'touchstart'].forEach(function (ev) {
+    copyBtns.forEach(function (b) { b.addEventListener(ev, warmKits, { once: true, passive: true }); });
+  });
+  copyBtns.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      /* 短縮版（起動文だけ）はKITを登録済みの人向けなので、失敗時にKIT添付を案内しない */
+      var isShort = btn.classList.contains('copy-btn--short');
+      if (isShort) { if (btn.disabled) return; } else if (copyBusy) return;
+      var originalHTML = btn.innerHTML;
+      var statusEl = (btn.closest('.copy-box') || btn.parentElement).querySelector('[id$="-copy-status"]');
+      /* ボタン内に入れる文言は7字まで（休止ラベルが5〜7字なので、これを超えると
+         ボタン幅で折り返して単語の途中で割れる）。説明はボタン下の注記行に出す */
+      var failLabel = isShort ? '再試行' : 'コピー失敗';
+      var failStatus = isShort ? 'コピーに失敗しました。もう一度お試しください。' : 'コピーに失敗しました。下のリンクからKITファイルをダウンロードして添付してください。';
+      var noteEl = btn.parentElement ? btn.parentElement.querySelector('.copy-choice-note') : null;
+      var originalNote = noteEl ? noteEl.textContent : '';
+      var place = btn.closest('#hero-copy-box') ? 'hero' : (btn.closest('.cta-final') ? 'cta' : (btn.closest('#faq') ? 'faq' : 'other'));
+      var finished = false;
+      var done = function (ok, message) {
+        if (finished) return; /* fetchのタイムアウトと本来の完了が競合しても二重発火しない */
+        finished = true;
+        /* 解除タイマーは真っ先に仕込む。この後のgtag・紙吹雪で例外が出ても
+           ボタンが「コピーしました」のまま固まらないようにするため */
+        setTimeout(function () {
+          btn.innerHTML = originalHTML;
+          btn.removeAttribute('data-copied');
+          if (isShort) btn.disabled = false; else setCopyBusy(false);
+          btn.removeAttribute('aria-busy');
+          if (noteEl) { noteEl.textContent = originalNote; }
+        }, ok ? 1800 : 2600);
+        btn.textContent = ok ? 'コピーしました' : (message || failLabel);
+        btn.setAttribute('data-copied', ok ? 'true' : 'false');
+        if (noteEl) { noteEl.textContent = ok ? 'AIチャットに貼り付けて送信' : '下のKITファイルを添付'; }
+        if (statusEl) { statusEl.textContent = ok ? 'コピーしました。AIチャットに貼り付けてください。' : failStatus; }
+        /* コピーできない環境では、ボタンのすぐ下にKITファイルの添付手段を出す
+           （以前は折りたたまれたFAQの中にしかリンクが無く、行き止まりだった） */
+        var fbEl = (btn.closest('.copy-box') || btn.parentElement).querySelector('.copy-fallback');
+        if (fbEl && !isShort) fbEl.hidden = ok;
+        if (ok) {
+          /* gtag・紙吹雪はどちらも演出目的で、失敗してもコピー自体は成功している。
+             canvasの取得失敗（拡張機能等）やgtagの例外でロック解除が巻き添えに
+             ならないよう、個別にtry/catchで囲む */
+          try {
+            if (typeof gtag === 'function') { gtag('event', 'copy_prompt', { variant: isShort ? 'short' : (btn.getAttribute('data-kit') === 'lite' ? 'lite' : 'full'), place: place }); }
+          } catch (e) { /* 計測できなくてもコピー成功の扱いは変えない */ }
+          try {
+            var r = btn.getBoundingClientRect();
+            confettiBurst(r.left + r.width / 2, r.top + r.height / 2);
+          } catch (e) { /* 演出が出なくても致命的ではない */ }
+        }
+      };
+      var writeOut = function (text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          return navigator.clipboard.writeText(text).then(function () { done(true); }, function () { done(fallbackCopy(text)); });
+        }
+        done(fallbackCopy(text));
+      };
+      /* setCopyBusy(true)以降の同期例外でロックが残らないよう、本体全体を囲む */
+      try {
+        if (isShort) { btn.disabled = true; writeOut(buildShortPromptText()); return; }
+        setCopyBusy(true);
+        btn.setAttribute('aria-busy', 'true'); /* 押した本人は薄くしない（.btn:disabled CSSの例外条件） */
+        btn.textContent = '準備中…';
+        /* ボタンには短いラベルだけを入れ、長い説明は注記行と読み上げ用テキストへ回す */
+        var fetchFail = function () {
+          failStatus = 'KIT本文を取得できませんでした。下のリンクからKITファイルをダウンロードして添付してください。';
+          done(false);
+        };
+        var isLiteKit = btn.getAttribute('data-kit') === 'lite';
+        var kitFile = isLiteKit ? KIT_LITE : KIT_FULL;
+        var textPromise = fetchKitText(kitFile).then(function (kitText) { return buildFullPromptText(kitText, isLiteKit); });
+        /* Safariは非同期fetch完了後のwriteTextを「ユーザー操作外」として拒否することがある。
+           ClipboardItemにPromiseを渡す形ならクリックの文脈で許可されるため、常にこの経路を
+           先に試す（キャッシュ済みでもPromiseを渡せばよい。以前はキャッシュ時にwriteTextへ
+           落としていたが、プリフェッチ完了後のSafariで稀に拒否されていた）。
+           write自体もタイムアウトと競走させ、fetchが遅い環境でここで固まらないようにする */
+        if (navigator.clipboard && navigator.clipboard.write && window.ClipboardItem) {
+          try {
+            var item = new ClipboardItem({
+              'text/plain': textPromise.then(function (t) { return new Blob([t], { type: 'text/plain' }); })
+            });
+            withTimeout(navigator.clipboard.write([item]), KIT_FETCH_TIMEOUT + 2000).then(function () { done(true); }, function () {
+              textPromise.then(writeOut, fetchFail);
+            });
+            return;
+          } catch (e) { /* 非対応ブラウザは従来経路へ */ }
+        }
+        textPromise.then(writeOut, fetchFail);
+      } catch (e) {
+        done(false);
+      }
+    });
+
+    /* magnetic spotlight（pointer:fine のみ・rAFスロットル） */
+    if (window.matchMedia('(pointer: fine)').matches) {
+      var ticking = false;
+      btn.addEventListener('pointermove', function (e) {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(function () {
+          var r = btn.getBoundingClientRect();
+          btn.style.setProperty('--mx', ((e.clientX - r.left) / r.width * 100) + '%');
+          btn.style.setProperty('--my', ((e.clientY - r.top) / r.height * 100) + '%');
+          ticking = false;
+        });
+      });
+    }
+  });
+
+  /* ---- お問い合わせ: クリックでメールアドレスをコピー（mailtoはメールアプリ未設定PCで無反応のため） ---- */
+  var mailBtn = document.getElementById('footer-mail');
+  if (mailBtn) {
+    var MAIL = 'mailad4me@gmail.com';
+    var mailOriginal = mailBtn.textContent;
+    mailBtn.addEventListener('click', function () {
+      var done = function (ok) {
+        mailBtn.textContent = ok ? 'コピーしました: ' + MAIL : 'コピーできませんでした（アドレスを選択してコピーしてください）';
+        setTimeout(function () { mailBtn.textContent = mailOriginal; }, 1800);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(MAIL).then(function () { done(true); }, function () { done(fallbackCopy(MAIL)); });
+      } else {
+        done(fallbackCopy(MAIL));
+      }
+    });
+  }
+
+  /* ---- ai-research-flow 図解: ロード時自動再生 + ループ + 画面外一時停止 ---- */
+  function initArfDiagram() {
+    var wrap = document.getElementById('arf-stage');
+    if (!wrap) return;
+    var seq = [
+      [0,     'arf-b1',  'arf-glow-b'],
+      [450,   'arf-s1',  'arf-glow-b'],
+      [990,   'arf-hl1', 'arf-glow-b'],
+      [1710,  'arf-fo-trunk', null],
+      [2250,  'arf-b2',  'arf-glow-g'],
+      [2610,  'arf-fo-branch-1', null],
+      [2610,  'arf-a1',  'arf-glow-g'],
+      [3060,  'arf-fo-branch-2', null],
+      [3060,  'arf-a2',  'arf-glow-g'],
+      [3510,  'arf-fo-branch-3', null],
+      [3510,  'arf-a3',  'arf-glow-g'],
+      [4680,  'arf-fi',  null],
+      [5130,  'arf-b3',  'arf-glow-t'],
+      [5580,  'arf-s3',  'arf-glow-t'],
+      [6120,  'arf-hl3', null],
+      [6750,  'arf-af',  null],
+      [7020,  'arf-b4',  'arf-glow-r'],
+      [7470,  'arf-res', 'arf-glow-r'],
+      [7920,  'arf-hl4', null]
+    ];
+    var HOLD_MS = 3200;
+    var timers = [];
+    var isVisible = true;
+    var pendingReplay = false;
+
+    if ('IntersectionObserver' in window) {
+      var visObs = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          isVisible = entry.isIntersecting;
+          if (isVisible && pendingReplay) {
+            pendingReplay = false;
+            play();
+          }
+        });
+      }, { threshold: 0.1 });
+      visObs.observe(wrap.closest('.hero-diagram-wrap') || wrap);
+    }
+
+    function resetAll() {
+      timers.forEach(clearTimeout);
+      timers = [];
+      wrap.querySelectorAll('.arf-gi').forEach(function (el) {
+        el.classList.remove('on', 'arf-glow-b', 'arf-glow-g', 'arf-glow-t', 'arf-glow-r');
+      });
+    }
+
+    function play() {
+      if (reduced) {
+        wrap.querySelectorAll('.arf-gi').forEach(function (el) { el.classList.add('on'); });
+        return;
+      }
+      resetAll();
+      void wrap.offsetWidth;
+      seq.forEach(function (s) {
+        var delay = s[0], id = s[1], gc = s[2];
+        timers.push(setTimeout(function () {
+          var el = document.getElementById(id);
+          if (!el) return;
+          el.classList.remove('arf-glow-b', 'arf-glow-g', 'arf-glow-t', 'arf-glow-r');
+          void el.offsetWidth;
+          el.classList.add('on');
+          if (gc) el.classList.add(gc);
+        }, delay));
+      });
+      var lastDelay = seq[seq.length - 1][0];
+      timers.push(setTimeout(function () {
+        if (isVisible) { play(); } else { pendingReplay = true; }
+      }, lastDelay + HOLD_MS));
+    }
+    play();
+  }
+  initArfDiagram();
+
+  /* ---- レポート実例フリップビューア ---- */
+  function initReportFlip() {
+    var stage = document.getElementById('rf-stage');
+    if (!stage) return;
+    var TOTAL = 15;
+    var current = 1;
+    var animating = false;
+    var imgA = document.getElementById('rf-page-a');
+    var imgB = document.getElementById('rf-page-b');
+    var counter = document.getElementById('rf-count');
+    var active = imgA;
+    var standby = imgB;
+    var listeners = [];
+    function onChange(fn) { listeners.push(fn); }
+    function notify() { listeners.forEach(function (fn) { fn(current); }); }
+
+    function src(n) {
+      return 'assets/report/page-' + String(n).padStart(2, '0') + '.webp';
+    }
+    function preload(n) {
+      if (n < 1 || n > TOTAL) return;
+      var im = new Image();
+      im.src = src(n);
+    }
+    function show(n, dir) {
+      if (animating) return;
+      var next = ((n - 1 + TOTAL) % TOTAL) + 1;
+      if (next === current) return;
+      animating = true;
+      var target = src(next);
+
+      var started = false;
+      function start() {
+        if (started) return;
+        started = true;
+        standby.src = target;
+        standby.alt = 'ベンチマーク調査レポート実例 ' + next + 'ページ目';
+        standby.removeAttribute('aria-hidden');
+        standby.classList.remove('rf-out-left', 'rf-from-left', 'is-active');
+        if (dir === 'prev') standby.classList.add('rf-from-left');
+        void standby.offsetWidth;
+        standby.classList.add('is-active');
+        /* 開始位置クラスを残すと is-active より後定義の transform(-26px) が勝ち続け、
+           前へ移動したページが恒久的に左へずれる。開始位置を確定させた直後に外す */
+        standby.classList.remove('rf-from-left');
+        active.classList.remove('is-active');
+        if (dir !== 'prev') active.classList.add('rf-out-left');
+        var old = active;
+        active = standby;
+        standby = old;
+        current = next;
+        counter.textContent = current + ' / ' + TOTAL;
+        notify();
+        setTimeout(function () {
+          standby.classList.remove('rf-out-left', 'rf-from-left');
+          standby.setAttribute('aria-hidden', 'true');
+          animating = false;
+        }, 340);
+        preload(next + 1);
+        preload(next - 1);
+      }
+      // 切り離したImageで先読みし、キャッシュに載ってからstandbyへ差し替える
+      // （未読込のsrc差し替えは前ページの残像が表示されるため）。遅い場合も600msで開始。
+      var loader = new Image();
+      loader.onload = start;
+      loader.onerror = start;
+      loader.src = target;
+      setTimeout(start, 600);
+    }
+
+    document.getElementById('rf-next').addEventListener('click', function (e) { e.stopPropagation(); show(current + 1, 'next'); });
+    document.getElementById('rf-prev').addEventListener('click', function (e) { e.stopPropagation(); show(current - 1, 'prev'); });
+    stage.addEventListener('click', function (e) {
+      var r = stage.getBoundingClientRect();
+      if ((e.clientX - r.left) / r.width < 0.4) show(current - 1, 'prev');
+      else show(current + 1, 'next');
+    });
+    stage.addEventListener('keydown', function (e) {
+      if (e.key === 'ArrowRight') { e.preventDefault(); show(current + 1, 'next'); }
+      if (e.key === 'ArrowLeft') { e.preventDefault(); show(current - 1, 'prev'); }
+    });
+    var touchX = null;
+    stage.addEventListener('touchstart', function (e) { touchX = e.touches[0].clientX; }, { passive: true });
+    stage.addEventListener('touchend', function (e) {
+      if (touchX === null) return;
+      var dx = e.changedTouches[0].clientX - touchX;
+      if (dx > 44) show(current - 1, 'prev');
+      else if (dx < -44) show(current + 1, 'next');
+      touchX = null;
+    }, { passive: true });
+
+    preload(2);
+    preload(15);
+
+    /* ---- 拡大ライトボックス ---- */
+    var lb = document.getElementById('rf-lightbox');
+    var lbImg = document.getElementById('rf-lightbox-img');
+    var lbCount = document.getElementById('rf-lb-count');
+    var lastFocused = null;
+
+    function syncLightbox(n) {
+      lbImg.src = src(n);
+      lbImg.alt = 'ベンチマーク調査レポート実例 ' + n + 'ページ目（拡大表示）';
+      lbCount.textContent = n + ' / ' + TOTAL;
+    }
+    onChange(function (n) { if (!lb.hidden) syncLightbox(n); });
+
+    function openLightbox() {
+      lastFocused = document.activeElement;
+      syncLightbox(current);
+      lb.hidden = false;
+      document.body.style.overflow = 'hidden';
+      document.getElementById('rf-lb-close').focus();
+    }
+    function closeLightbox() {
+      lb.hidden = true;
+      document.body.style.overflow = '';
+      if (lastFocused && lastFocused.focus) lastFocused.focus();
+    }
+
+    document.getElementById('rf-expand').addEventListener('click', function (e) {
+      e.stopPropagation();
+      openLightbox();
+    });
+    document.getElementById('rf-lb-close').addEventListener('click', closeLightbox);
+    document.getElementById('rf-lb-prev').addEventListener('click', function () { show(current - 1, 'prev'); });
+    document.getElementById('rf-lb-next').addEventListener('click', function () { show(current + 1, 'next'); });
+    lb.addEventListener('click', function (e) { if (e.target === lb) closeLightbox(); });
+    document.addEventListener('keydown', function (e) {
+      if (lb.hidden) return;
+      if (e.key === 'Escape') { closeLightbox(); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); show(current + 1, 'next'); }
+      else if (e.key === 'ArrowLeft') { e.preventDefault(); show(current - 1, 'prev'); }
+      else if (e.key === 'Tab') {
+        /* ライトボックス表示中は、Tabで背後のページへフォーカスが漏れないよう
+           先頭・末尾のボタン間で折り返す */
+        var f = Array.prototype.filter.call(lb.querySelectorAll('button'), function (b) { return !b.disabled; });
+        if (!f.length) return;
+        var first = f[0], last = f[f.length - 1];
+        if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && (document.activeElement === last || !lb.contains(document.activeElement))) { e.preventDefault(); first.focus(); }
+      }
+    });
+  }
+  initReportFlip();
+})();
+</script>
+</body>
+</html>

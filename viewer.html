@@ -1,0 +1,1271 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>レポートビューア ｜ ResearchRobo</title>
+<meta name="description" content="Research KITが返したレポートHTML（PART 1/n〜のコードブロック）を貼り付けて、結合・書式付与・機械検証し、その場でプレビュー・PDFとして保存できるビューアページ。貼り付けた内容はブラウザ内だけで処理されます。">
+<link rel="canonical" href="https://ks278810.github.io/research-robo/viewer.html">
+<meta name="robots" content="noindex">
+
+<link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+<link rel="icon" type="image/png" sizes="512x512" href="assets/images/favicon-512.png">
+<link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+:root {
+  --color-bg: #FAFBFC;
+  --color-bg-alt: #FFFFFF;
+  --color-main: #0F2A43;
+  --color-sub: #0D9488;
+  --color-sub-text: #0F766E;
+  --color-accent: #1D4ED8;
+  --color-accent-dark: #1740B0;
+  --color-text: #2D2D2D;
+  --color-mute: #6B7280;
+  --color-border: #E4E9EE;
+  --color-ok: #0F766E;
+  --color-bad: #B91C1C;
+  --color-warn: #B45309;
+  --font-heading: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+  --font-body: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+  --font-mono: "SF Mono", "Consolas", "Menlo", monospace;
+  --radius-md: 14px;
+  --radius-sm: 8px;
+  --shadow-sm: 0 2px 10px rgba(15, 42, 67, 0.06);
+  --shadow-md: 0 10px 28px rgba(15, 42, 67, 0.10);
+}
+body {
+  font-family: var(--font-body);
+  color: var(--color-text);
+  background: var(--color-bg);
+  line-height: 1.7;
+}
+a { color: var(--color-accent); }
+.container { max-width: 1100px; margin-inline: auto; padding-inline: clamp(1rem, 4vw, 2rem); }
+header.site-header {
+  border-bottom: 1px solid var(--color-border);
+  background: rgba(250,251,252,0.9);
+  position: sticky; top: 0; z-index: 10;
+}
+.site-header .container { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+.brand { display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-heading); font-weight: 700; color: var(--color-main); text-decoration: none; font-size: 1rem; }
+.brand-mark { width: 26px; height: 26px; }
+.back-link { font-size: 0.85rem; color: var(--color-mute); text-decoration: none; }
+.back-link:hover { color: var(--color-accent); }
+
+main { padding-block: clamp(1.5rem, 3vw, 2.5rem) 4rem; }
+h1 { font-family: var(--font-heading); color: var(--color-main); font-size: clamp(1.3rem, 1.1rem + 1vw, 1.75rem); margin: 0 0 0.5rem; }
+.lead { color: var(--color-mute); font-size: 0.9375rem; max-width: 62ch; margin: 0 0 1.5rem; }
+.privacy-note {
+  display: flex; gap: 0.6rem; align-items: flex-start;
+  background: #F0FBF8; border: 1px solid #BFE5DD; border-radius: var(--radius-sm);
+  padding: 0.8rem 1rem; font-size: 0.85rem; color: var(--color-sub-text); margin-bottom: 1.5rem;
+}
+.privacy-note svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+
+.panel {
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.panel h2 { font-family: var(--font-heading); color: var(--color-main); font-size: 1.0625rem; margin: 0 0 0.75rem; }
+
+textarea#input-html {
+  width: 100%;
+  min-height: 220px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.5;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem;
+  resize: vertical;
+  background: #FCFDFE;
+  color: var(--color-text);
+}
+textarea#input-html:focus { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+
+.actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem; }
+/* hidden属性を display:flex が打ち消してしまうため、明示的に優先させる
+   （実走: 「不備をコピー」が消えず、押すと「不備はありません」と出た） */
+.actions[hidden] { display: none; }
+.btn {
+  display: inline-flex; align-items: center; gap: 0.45rem;
+  padding: 0.7rem 1.25rem; border-radius: var(--radius-sm);
+  font-weight: 700; font-size: 0.875rem; border: none; cursor: pointer;
+  font-family: inherit;
+}
+.btn-primary { background: linear-gradient(135deg, var(--color-accent), var(--color-sub-text)); color: #fff; box-shadow: var(--shadow-sm); }
+.btn-outline { background: transparent; color: var(--color-main); border: 1.5px solid var(--color-border); }
+.btn-outline:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+#check-results { display: none; }
+#check-results.is-visible { display: block; }
+.check-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.check-item {
+  display: flex; gap: 0.6rem; align-items: flex-start;
+  font-size: 0.875rem; padding: 0.5rem 0.65rem; border-radius: var(--radius-sm);
+}
+.check-item.ok { background: #F0FBF8; }
+.check-item.bad { background: #FEF2F2; }
+.check-item.warn { background: #FFFBEB; }
+.check-icon { flex-shrink: 0; width: 1.2em; text-align: center; font-weight: 900; font-size: 1.05rem; line-height: 1.35; }
+.check-item.ok .check-icon { color: var(--color-ok); }
+.check-item.bad .check-icon { color: var(--color-bad); }
+.check-item.warn .check-icon { color: var(--color-warn); }
+.check-detail { color: var(--color-mute); font-size: 0.8125rem; margin-top: 0.15rem; }
+.check-next { font-size: 0.8125rem; margin-top: 0.15rem; font-weight: 500; color: var(--color-main); }
+details.check-tech { margin-top: 0.2rem; }
+details.check-tech summary { cursor: pointer; color: var(--color-mute); font-size: 0.75rem; }
+details.check-tech .check-tech-label { color: var(--color-mute); font-size: 0.8125rem; margin-top: 0.2rem; }
+li.check-group-item { list-style: none; }
+details.check-group summary { cursor: pointer; font-size: 0.875rem; color: var(--color-mute); padding: 0.5rem 0.65rem; border-radius: var(--radius-sm); background: #F5F7F9; }
+details.check-group[open] summary { margin-bottom: 0.5rem; }
+details.print-help { margin-top: 0.5rem; font-size: 0.85rem; color: var(--color-mute); }
+details.print-help summary { cursor: pointer; }
+
+.preview-wrap { display: none; }
+.preview-wrap.is-visible { display: block; }
+.preview-frame-box {
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  background: #fff;
+}
+iframe#preview {
+  width: 100%;
+  height: 70vh;
+  border: none;
+  display: block;
+}
+.empty-hint { color: var(--color-mute); font-size: 0.875rem; }
+
+/* 見出し行: タイトル＋一言説明の右にマスコットを置く */
+.page-head { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+.head-mascot { width: 110px; height: auto; flex-shrink: 0; }
+.mascot-breathe { animation: mascot-breathe 3.2s ease-in-out infinite; }
+@keyframes mascot-breathe {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-6px) scale(1.015); }
+}
+@media (prefers-reduced-motion: reduce) { .mascot-breathe { animation: none; } }
+@media (max-width: 600px) { .head-mascot { width: 76px; } }
+
+/* チェック結果の記号の凡例（× 要対応・〇 参考・◎ 問題なし） */
+.check-legend { margin: 0 0 0.75rem; font-size: 0.8125rem; color: var(--color-mute); }
+.check-legend .lg { font-weight: 900; }
+.check-legend .lg.bad { color: var(--color-bad); }
+.check-legend .lg.warn { color: var(--color-warn); }
+.check-legend .lg.ok { color: var(--color-ok); }
+
+/* 状態バナー: 「今どの段階で、次に何をするか」を1箇所にまとめる。
+   state-collecting（届き待ち）｜state-needs-fix（赤あり）｜state-done（完成） */
+.status-banner {
+  display: flex; align-items: center; gap: 0.85rem;
+  margin-top: 0.9rem; padding: 0.85rem 1rem;
+  border-radius: var(--radius-sm); border: 1px solid var(--color-border);
+  background: #F5F7F9;
+}
+.status-banner[hidden] { display: none; }
+.status-main { display: flex; flex-direction: column; gap: 0.45rem; min-width: 0; }
+.status-mascot { width: 64px; height: auto; flex-shrink: 0; }
+@media (max-width: 600px) { .status-mascot { width: 46px; } }
+.status-banner.state-collecting { background: #EFF6FF; border-color: #BFDBFE; }
+.status-banner.state-needs-fix { background: #FEF2F2; border-color: #FCA5A5; }
+.status-banner.state-done { background: #F0FBF8; border-color: #99E3D3; }
+.status-title { font-weight: 700; font-size: 0.9375rem; color: var(--color-main); }
+.status-banner.state-needs-fix .status-title { color: var(--color-bad); }
+.status-banner.state-done .status-title { color: var(--color-ok); }
+.status-notice { color: var(--color-mute); font-size: 0.8125rem; }
+.status-chips { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.part-chip {
+  display: inline-flex; align-items: center;
+  padding: 0.15rem 0.6rem; border-radius: 999px;
+  font-size: 0.75rem; font-weight: 700;
+  border: 1px solid var(--color-border); color: var(--color-mute); background: #fff;
+}
+.part-chip.got { color: var(--color-ok); border-color: #99E3D3; background: #F0FBF8; }
+
+/* 押すべきボタンを光らせる。押す必要があるときだけ付く一時クラス */
+@keyframes rr-glow-ready { 0%, 100% { box-shadow: 0 0 0 0 rgba(15,118,110,0); } 50% { box-shadow: 0 0 0 7px rgba(15,118,110,0.28); } }
+@keyframes rr-glow-attn { 0%, 100% { box-shadow: 0 0 0 0 rgba(185,28,28,0); } 50% { box-shadow: 0 0 0 7px rgba(185,28,28,0.22); } }
+.btn-glow-ready { animation: rr-glow-ready 1.6s ease-in-out infinite; }
+.btn-glow-attn { animation: rr-glow-attn 1.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) { .btn-glow-ready, .btn-glow-attn { animation: none; } }
+
+footer.site-footer {
+  border-top: 1px solid var(--color-border);
+  padding-block: 1.5rem;
+  font-size: 0.8rem;
+  color: var(--color-mute);
+  text-align: center;
+}
+footer.site-footer a { color: var(--color-mute); }
+
+@media (max-width: 600px) {
+  .actions { flex-direction: column; }
+  .btn { justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <img class="brand-mark" src="assets/images/logo-mark.svg" alt="" width="26" height="26" aria-hidden="true">
+      ResearchRobo
+    </a>
+    <a href="index.html" class="back-link">← 紹介ページへ戻る</a>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <div class="page-head">
+      <div>
+        <h1>レポートビューア</h1>
+        <p class="lead">AIが返したコードブロックを貼ると、レポートに仕上げてPDFにできます。</p>
+      </div>
+      <img class="head-mascot mascot-breathe" src="assets/images/mascot/mascot-wave.webp" alt="" aria-hidden="true" width="110" height="110">
+    </div>
+
+    <div class="privacy-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>貼り付けた内容は外部に送信されません（フォント読み込みのみGoogle Fontsを使用）。</span>
+    </div>
+
+    <div class="panel">
+      <h2 id="intake-heading">1. 届いたPARTを貼り付け</h2>
+      <textarea id="input-html" placeholder="ここに貼り付け（届いた順に1つずつ。貼るだけで取り込まれます）&#10;調査結果の一覧（コードブロックの中身）も貼ると、付録Cに主張台帳が付きます（任意）"></textarea>
+      <div class="actions">
+        <button class="btn btn-primary" id="btn-check" type="button" disabled>検証してプレビュー</button>
+        <button class="btn btn-outline" id="btn-clear" type="button">クリア</button>
+      </div>
+      <div class="status-banner" id="status-banner" hidden role="status" aria-live="polite">
+        <img class="status-mascot" id="status-mascot" src="assets/images/mascot/mascot-point.webp" alt="" aria-hidden="true" width="64" height="64">
+        <div class="status-main">
+          <div class="status-chips" id="status-chips"></div>
+          <div class="status-title" id="status-title"></div>
+          <div class="status-notice" id="status-notice"></div>
+        </div>
+      </div>
+      <p class="empty-hint" id="paste-hint" hidden style="margin-top:0.75rem;"></p>
+    </div>
+
+    <div class="panel" id="check-results">
+      <h2>2. チェック結果</h2>
+      <p class="check-legend"><span class="lg bad">×</span> 修正が必要　<span class="lg warn">〇</span> 参考・黄色はそのままで可　<span class="lg ok">◎</span> 問題なし</p>
+      <ul class="check-list" id="check-list"></ul>
+      <div class="actions" id="issue-actions" hidden>
+        <button class="btn btn-outline" id="btn-copy-issues" type="button">不備をコピー（AIチャットへ）</button>
+      </div>
+    </div>
+
+    <div class="panel preview-wrap" id="preview-panel">
+      <h2>3. プレビュー</h2>
+      <div class="preview-frame-box">
+        <!-- sandbox: allow-same-origin は「PDFとして保存」（contentWindow.print()）に必要。
+           allow-scripts は絶対に追加しない（same-origin と併用するとサンドボックスが無効になり、
+           貼り付けたレポート内のスクリプトがこのページと同一オリジンで動いてしまう） -->
+      <iframe id="preview" title="レポートプレビュー" sandbox="allow-same-origin allow-modals allow-popups allow-popups-to-escape-sandbox"></iframe>
+      </div>
+      <div class="actions">
+        <button class="btn btn-primary" id="btn-print" type="button" disabled>PDFとして保存</button>
+        <button class="btn btn-outline" id="btn-download" type="button" disabled>HTMLをダウンロード</button>
+      </div>
+      <p class="empty-hint" style="margin-top:0.75rem;">保存は必ずこのページの「PDFとして保存」から。</p>
+      <details class="print-help">
+        <summary>うまくいかないとき</summary>
+        <ul>
+          <li>印刷ダイアログが開いたら、送信先を「PDFに保存」にし、詳細設定の「背景のグラフィック」をON、「ヘッダーとフッター」をOFFにしてください。</li>
+          <li>Safari・iPhone/iPadで印刷結果が空白になるときは、「HTMLをダウンロード」で保存したファイルをブラウザで開き、そこから印刷（Ctrl+P／⌘+P）してください。</li>
+        </ul>
+      </details>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    &copy; 2026 Kohei Shintani, Ph.D. ／ <a href="index.html">ResearchRobo</a>
+  </div>
+</footer>
+
+<script src="assets/js/rr-checks.js"></script>
+<script src="assets/js/rr-report-css.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* 検査・正規化・PART結合・トークン置換の純関数は共有モジュール（assets/js/rr-checks.js）、
+     レポート書式CSSは assets/js/rr-report-css.js にある。このページは入出力と描画だけを持つ */
+  var RR = window.RRChecks;
+  var CSS = (window.RRReportCss && window.RRReportCss.REPORT_CSS) || "";
+
+  /* 共有スクリプト（assets/js/rr-checks.js）が読み込めなかった場合（オフライン・
+     ブロック等）は、無反応で終わらせず案内を出す */
+  function ensureRR() {
+    if (RR) return true;
+    if (statusBanner) {
+      statusBanner.hidden = false;
+      statusBanner.className = "status-banner";
+      if (statusTitle) statusTitle.textContent = "";
+      /* RRが無いので updateStatusUI は呼べない（RR.partStatusに依存）。直接書く */
+      eventNotice = "必要なファイルを読み込めませんでした。ページを再読み込みするか、" +
+        "https://ks278810.github.io/research-robo/viewer.html を直接開いてください" +
+        "（ファイルを保存して開いた場合は、assets フォルダも同じ場所に必要です）。";
+      if (statusNotice) statusNotice.textContent = eventNotice;
+    }
+    return false;
+  }
+  var STORE_KEY = "rr_viewer_parts_v1";
+  var RL_STORE_KEY = "rr_viewer_resultlist_v1";
+  /* 貼り付けられた結果一覧（S/C/N/RECEIPT行）のブロック配列。60行分割やWP単位で
+     複数回貼っても蓄積する（レポートPARTのpartStoreとは別管理。任意機能なので
+     結果一覧が一度も貼られていなければ何も変わらない） */
+  var resultListStore = [];
+
+  var input = document.getElementById("input-html");
+  var checkBtn = document.getElementById("btn-check");
+  var clearBtn = document.getElementById("btn-clear");
+  var printBtn = document.getElementById("btn-print");
+  var resultsBox = document.getElementById("check-results");
+  var listEl = document.getElementById("check-list");
+  var previewPanel = document.getElementById("preview-panel");
+  var iframe = document.getElementById("preview");
+  var downloadBtn = document.getElementById("btn-download");
+  var statusBanner = document.getElementById("status-banner");
+  var statusChips = document.getElementById("status-chips");
+  var statusTitle = document.getElementById("status-title");
+  var statusNotice = document.getElementById("status-notice");
+  var statusMascot = document.getElementById("status-mascot");
+  var intakeHeading = document.getElementById("intake-heading");
+  var issueActions = document.getElementById("issue-actions");
+  var copyIssuesBtn = document.getElementById("btn-copy-issues");
+
+  /* 記号は日本のユーザーに馴染みのある × 〇 ◎ を使う。
+     × = 修正が必要（赤）｜〇 = 参考。そのままでも完成できる（黄）｜◎ = 問題なし（緑） */
+  function iconOk() { return '<span class="check-icon" aria-hidden="true">◎</span>'; }
+  function iconBad() { return '<span class="check-icon" aria-hidden="true">×</span>'; }
+  function iconWarn() { return '<span class="check-icon" aria-hidden="true">〇</span>'; }
+
+  var lastResults = [];
+
+  /* kind: "action"（要対応・赤）| "warn"（参考・黄）| "log"（自動処理）| "na"（対象外）| "ok"。
+     kind の無い結果（旧形式・ページ内で合成した行）は ok から推定する。
+     合格（ok:true）の行は log/na（自動処理ログ）でない限り必ず "ok" 扱いにする——
+     チェック側が誤って action/warn を渡しても、合格した項目が赤×で表示される
+     事故（「同じ章の重複はありません」が赤で出た不具合）を構造的に防ぐガード */
+  function kindOf(r) {
+    var k = r.kind || (r.ok ? "ok" : "action");
+    if (r.ok && k !== "log" && k !== "na") return "ok";
+    return k;
+  }
+
+  /* 1件の結果行。表示は素人向けの title（無ければ label）＋ next（次の一手）、
+     AI向けの label / detail は「詳細」折りたたみに入れる。
+     data-label / data-kind / data-ok はテスト・機械読み取り用 */
+  function buildRow(r) {
+    var kind = kindOf(r);
+    var li = document.createElement("li");
+    li.className = "check-item " + (kind === "action" ? "bad" : (kind === "warn" ? "warn" : "ok"));
+    li.setAttribute("data-label", r.label);
+    li.setAttribute("data-kind", kind);
+    li.setAttribute("data-ok", r.ok ? "1" : "0");
+    var icon = kind === "action" ? iconBad() : (kind === "warn" ? iconWarn() : iconOk());
+    var inner = '<div class="check-title">' + escapeHtml(r.title || r.label) + "</div>";
+    if (r.next) inner += '<div class="check-next">次の一手: ' + escapeHtml(r.next) + "</div>";
+    inner += '<details class="check-tech"><summary>詳細</summary>' +
+      '<div class="check-tech-label">' + escapeHtml(r.label) + "</div>" +
+      (r.detail ? '<div class="check-detail">' + escapeHtml(r.detail) + "</div>" : "") +
+      "</details>";
+    li.innerHTML = icon + "<div>" + inner + "</div>";
+    return li;
+  }
+
+  function buildGroup(summaryText, groupRows) {
+    var li = document.createElement("li");
+    li.className = "check-group-item";
+    var det = document.createElement("details");
+    det.className = "check-group";
+    var sum = document.createElement("summary");
+    sum.textContent = summaryText;
+    det.appendChild(sum);
+    var ul = document.createElement("ul");
+    ul.className = "check-list";
+    groupRows.forEach(function (r) { ul.appendChild(buildRow(r)); });
+    det.appendChild(ul);
+    li.appendChild(det);
+    return li;
+  }
+
+  /* 表示順: 要対応（赤・展開）→ 参考（黄・展開）→「問題なし」折りたたみ →
+     「自動で整えました」折りたたみ（自動処理ログ＋対象外）。
+     lastResults には runChecks の生配列を元の順序のまま保持する（機械契約） */
+  function renderResults(results) {
+    lastResults = results;
+    listEl.innerHTML = "";
+    var actions = [], warns = [], oks = [], autos = [];
+    results.forEach(function (r) {
+      var k = kindOf(r);
+      if (k === "action") actions.push(r);
+      else if (k === "warn") warns.push(r);
+      else if (k === "log" || k === "na") autos.push(r);
+      else oks.push(r);
+    });
+    actions.forEach(function (r) { listEl.appendChild(buildRow(r)); });
+    warns.forEach(function (r) { listEl.appendChild(buildRow(r)); });
+    if (oks.length) listEl.appendChild(buildGroup("◎ 問題なし（" + oks.length + "項目）", oks));
+    if (autos.length) listEl.appendChild(buildGroup("◎ 自動で整えました（" + autos.length + "件）", autos));
+    resultsBox.classList.add("is-visible");
+    if (issueActions) issueActions.hidden = !issueText(results);
+  }
+
+  /* 不備の行を「RR-CHECK: {項目}: {詳細}」の行群にする（AIチャットへ貼り戻す用）。
+     書式は不変（KITが読む機械契約）。
+     要対応（赤・kind:"action"）だけを送る。参考（黄・warn）は画面で
+     「そのままで完成できる」と案内しているものなので、AIに直させると
+     無関係な書き換えが増え、新しい不備を生む（修正ループが収束しない原因だった）。
+     local:true の行（貼り付け側で直す不備。例: 重複ランドマーク）もAIに送らない */
+  function issueText(results) {
+    var acts = (results || []).filter(function (r) { return !r.ok && !r.local && kindOf(r) === "action"; });
+    /* label/detailの保存値そのものは変えない（baselineの機械契約）。RR-CHECK行を
+       組み立てるときだけ空白類を1つに畳んで、改行を含むdetailが複数行のRR-CHECK行に
+       化けないようにする */
+    var oneLine = function (s) { return String(s || "").replace(/\s+/g, " ").trim(); };
+    var lines = acts.map(function (r) {
+      return "RR-CHECK: " + oneLine(r.label) + ": " + oneLine(r.detail);
+    });
+    /* 実走: 「該当するPART」とだけ伝えたため、AIが推測で1つのPARTだけを出し直し、
+       原因が別PARTにあって不備が消えなかった。検査は結合後の全文に対して行うので、
+       どのPARTを直せばよいかはAIには分からない。全PARTの出し直しを既定にする */
+    var n = partStore.n || 0;
+    /* 重複章（check 18）はlocal:trueなのでactsには入らず、既定では「クリア」して
+       貼り直すよう案内するしかない。だが実走で、貼り直しでは直らない原因
+       （AI自身が後のPARTで同じ章・枠を再出力した）が繰り返し起きた。
+       dupSelectorsが付いた行から、重複が実際にまたがっているPARTを生本文
+       走査で特定できた場合だけ、AI向けの出し直し文を合成する。特定できない
+       （同一PART内での重複・情報不足）場合は何もしない——从来どおり
+       「クリア」案内に任せる（誤った推測でPARTを名指ししない） */
+    var dupText = "";
+    (function () {
+      var dupRows = (results || []).filter(function (r) { return !r.ok && (r.dupSelectors || []).length; });
+      if (!dupRows.length || n <= 1) return;
+      var sels = [];
+      dupRows.forEach(function (r) { r.dupSelectors.forEach(function (s) { if (sels.indexOf(s) < 0) sels.push(s); }); });
+      var byPart = {};
+      var resolvedAny = false;
+      sels.forEach(function (sel) {
+        var needle = sel.charAt(0) === "#" ? 'id="' + sel.slice(1) + '"'
+          : sel.charAt(0) === "." ? 'class="' + sel.slice(1)
+          : 'id="' + sel + '"';
+        var hitKs = Object.keys(partStore.parts).map(Number).filter(function (k) {
+          return String((partStore.parts[k] || {}).body || "").indexOf(needle) >= 0;
+        }).sort(function (a, b) { return a - b; });
+        if (hitKs.length < 2) return;
+        resolvedAny = true;
+        /* 最初に現れたPARTを原本とみなし、それ以降を重複の出所として名指しする */
+        hitKs.slice(1).forEach(function (k) { (byPart[k] = byPart[k] || []).push(sel); });
+      });
+      if (!resolvedAny || !Object.keys(byPart).length) return;
+      var dks = Object.keys(byPart).map(Number).sort(function (a, b) { return a - b; });
+      dupText = "PART " + dks.map(function (k) { return k + "/" + n; }).join("、") +
+        " に、他のPARTと重複する部分（" + dks.map(function (k) { return byPart[k].join("・"); }).join("／") +
+        "）が含まれています。重複部分を含めず、該当PARTだけを重複の無い内容で出し直してください" +
+        "（他のPARTはそのまま。ビューアは貼り直したPARTだけを差し替えます）。";
+    })();
+    if (!lines.length) return dupText;
+    /* 不備の文面から原因のPARTを特定できる場合（検出された文字列がそのPARTの本文に
+       含まれる）はそのPARTだけを名指しし、特定できない集計系の不備（引用率・件数など）は
+       全PARTの出し直しを求める。実走で、AIが推測で1つのPARTだけ直して不備が消えなかった */
+    var culprits = {};
+    var identifiable = true;
+    acts.forEach(function (r) {
+      var m = String(r.detail || "").match(/検出:\s*([^,、\s（(]{2,60})/);
+      /* カンマ区切りの列挙（検出: img, iframe）や直結の括弧（検出: WP3（出典名なら…））を
+         針に巻き込むと、生のPART本文と一致せずPART特定が常に不発だった。最初の項目だけを
+         区切りの手前まで捕捉する */
+      if (m) {
+        var needle = m[1];
+        var hit = Object.keys(partStore.parts).filter(function (k) {
+          return String((partStore.parts[k] || {}).body || "").indexOf(needle) >= 0;
+        });
+        if (!hit.length) { identifiable = false; return; }
+        hit.forEach(function (k) { culprits[k] = true; });
+        return;
+      }
+      /* 章名を「、」区切りで列挙する2つの検査（出典の無い章／キーメッセージの無い章）は
+         「検出: 」形式ではないため上のパターンに乗らず、常に全PART出し直しに落ちていた。
+         実走で、章単位の不備なのに毎回レポート全体を書き直させてしまい、その結果
+         別の章に新しい不備を生む（実走で実際に発生）。章名は生PART本文の見出しに
+         そのまま出るので、同じ要領でPARTを特定する。1章でも見つからなければ
+         （誤った推測を避けるため）このcheckは識別不能のまま扱う */
+      var cm = String(r.detail || "").match(/(?:引用番号が1件も無い章|見出しの直後が \.key-message でない章): ([^（]+)/);
+      if (cm) {
+        var chapters = cm[1].split("、").map(function (s) { return s.trim(); }).filter(Boolean);
+        if (!chapters.length) { identifiable = false; return; }
+        /* 章名の生インデックス一致だと、目次（PART 1の<a href="#sec-N">章名</a>）や
+           PLANコメントの章名にも当たり、不備の無いPART 1まで名指ししてしまう
+           （実走で確認: 考察章1件の不備がPART 1と該当PARTの2本出し直しになった）。
+           章名は<h2>見出し</h2>の中身としてのみ本来出現するので、そこに限定する */
+        /* 完全一致だと、AIが手打ちの章番号（autoRepair R5が剥がす前の生PART本文の
+           「2. 章題」等）やトークン置換前の生の見出しを書いた場合に一致せず、
+           「識別不能→全PART出し直し」へ逆戻りする（実走ではないが監査で発見。
+           R5が章番号を剥がすのはビューアの表示時点であり、生PART本文には
+           番号が残っている）。包含一致にして、番号や記号が前後に付いていても
+           拾えるようにする（目次へのh2限定は維持しているので誤爆のリスクは低い） */
+        var partHasHeading = function (body, ch) {
+          var re = /<h2\b[^>]*>([\s\S]*?)<\/h2>/gi, m2;
+          while ((m2 = re.exec(body))) {
+            var inner = m2[1].replace(/<[^>]+>/g, "").trim();
+            if (inner === ch || inner.indexOf(ch) >= 0) return true;
+          }
+          return false;
+        };
+        var allFound = true;
+        var hits2 = [];
+        chapters.forEach(function (ch) {
+          var hit2 = Object.keys(partStore.parts).filter(function (k) {
+            return partHasHeading(String((partStore.parts[k] || {}).body || ""), ch);
+          });
+          if (!hit2.length) { allFound = false; return; }
+          hits2 = hits2.concat(hit2);
+        });
+        if (!allFound) { identifiable = false; return; }
+        hits2.forEach(function (k) { culprits[k] = true; });
+        return;
+      }
+      identifiable = false;
+    });
+    var ks = Object.keys(culprits).sort(function (a, b) { return a - b; });
+    /* UNCITED系（引用カバー率・件数一致・UNCITED割合）は検出文字列を持たないため従来は
+       全PART出し直しに落ちていたが、実際は最終PARTの <!-- UNCITED: --> 行の修正だけで
+       解消できることが多い（実走: 全PART再生成の重さがAIの回避応答を誘発した）。
+       赤が全てこの族なら最終PARTを名指しする */
+    var UNCITED_FAMILY = ["確認済み事実のうち8割以上が本文で引用されている",
+      "確認済み件数（rr:confirmed-count）と本文の主張ID数が一致している",
+      "UNCITEDの割合が確認済み事実の5%以内である",
+      /* PLANの割当漏れは引用漏れの上流原因なので同じ族として扱う
+         （この行が族の外にあると allUncited が落ち、全PART出し直しに戻ってしまう） */
+      "PLANコメントに確認済み主張が過不足なく割り当てられている"];
+    var allUncited = acts.length > 0 && acts.every(function (r) {
+      return UNCITED_FAMILY.indexOf(String(r.label || "")) >= 0;
+    });
+    /* 欠落IDが分かっている場合（check 17）、PLANコメントで「そのIDを担当する章」を引き、
+       その章の <section id="sec-N"> を含むPARTを特定する。実走で、6分割レポートの
+       不備修正に全6PARTの再出力を求めてしまい負担が大きかった。直すべきPARTだけを
+       名指しできれば、出し直しは1〜2PARTで済む */
+    var missingByPart = null;
+    (function () {
+      var RR = window.RRChecks;
+      if (!RR || !RR.parsePlan || n <= 1) return;
+      var ids = [];
+      acts.forEach(function (r) { (r.missingIds || []).forEach(function (id) { if (ids.indexOf(id) < 0) ids.push(id); }); });
+      if (!ids.length) return;
+      var part1 = (partStore.parts[1] || {}).body || "";
+      var plan = RR.parsePlan(part1);
+      if (!plan.present || !plan.count) return;
+      /* ID → 担当章 */
+      var secOf = {};
+      plan.entries.forEach(function (e) { e.ids.forEach(function (id) { if (!secOf[id]) secOf[id] = e.sec; }); });
+      /* 章 → その章の本文があるPART番号 */
+      var partOfSec = {};
+      Object.keys(partStore.parts).forEach(function (k) {
+        var body = String((partStore.parts[k] || {}).body || "");
+        var re = /<section[^>]*\sid\s*=\s*["']sec-([0-9]+)["']/gi, mm;
+        while ((mm = re.exec(body))) {
+          var sn = parseInt(mm[1], 10);
+          if (!partOfSec[sn]) partOfSec[sn] = parseInt(k, 10);
+        }
+      });
+      var map = {}, resolved = 0;
+      ids.forEach(function (id) {
+        var sec = secOf[id];
+        var pk = sec ? partOfSec[sec] : 0;
+        if (!pk) return;
+        (map[pk] = map[pk] || []).push(id);
+        resolved++;
+      });
+      /* 一部でも解決できなければ、取りこぼしたIDが直らないので採用しない */
+      if (resolved !== ids.length || !Object.keys(map).length) return;
+      missingByPart = map;
+    })();
+    var target;
+    /* missingByPartはUNCITED系（check17等）の情報だけから組み立てているため、
+       それ以外の族の赤（禁止語検出など）が同時に混ざっていると、そちらのPARTを
+       名指しし忘れて「他のPARTはそのままで」と言いながら不備を見落とす。
+       赤が全てUNCITED系（allUncited）のときだけ、この精密な絞り込みを使う */
+    if (n > 1 && missingByPart && allUncited) {
+      var pks = Object.keys(missingByPart).map(Number).sort(function (a, b) { return a - b; });
+      var withFinal = pks.slice();
+      if (withFinal.indexOf(n) < 0) withFinal.push(n);
+      target = "PART " + withFinal.map(function (k) { return k + "/" + n; }).join("、") +
+        " だけを出し直してください（他のPARTはそのままで構いません。ビューアは貼り直したPARTだけを差し替えます）。" +
+        "本文に組み込む主張ID — " +
+        pks.map(function (k) { return "PART " + k + "/" + n + ": " + missingByPart[k].join(", "); }).join("／") +
+        "。最終PART " + n + "/" + n + " では <!-- UNCITED: --> 行と rr:confirmed-count を実際に合わせてください。";
+    } else if (n > 1 && identifiable && ks.length) {
+      target = "PART " + ks.map(function (k) { return k + "/" + n; }).join("、") +
+        " を丸ごと出し直してください（他のPARTはそのままで構いません。ビューアは貼り直したPARTだけを差し替えます）。";
+    } else if (n > 1 && allUncited) {
+      target = "未引用の主張を本文へ組み込む場合は、その主張を担当する章のPARTと最終PART " + n + "/" + n + " の両方を出し直してください。" +
+        "件数の食い違いや、5%以内に収まるUNCITEDの理由の追記だけで済む場合に限り、最終PART " + n + "/" + n + " の <!-- UNCITED: --> 行の修正だけで解消できます。";
+    } else if (n > 1) {
+      target = "レポート全体（PART 1/" + n + " 〜 " + n + "/" + n + "）を最初から順に出し直してください。" +
+        "不備は結合後の全文に対する検査結果のため、どのPARTに原因があるかは指定できません。" +
+        "1つのPARTだけを直しても解消しないことがあります。";
+    } else {
+      target = "レポートを丸ごと出し直してください。";
+    }
+    /* 出し直しは1回まで（ユーザー方針）。2回目の文面には「これが最後」と明示し、
+       残った不備は残したままでよいと伝える。AI側が延々と直そうとして
+       重い再出力を繰り返すのを止める */
+    /* 実走: fixRounds>=1の間ずっと「これが最後」を出し続けたため、3回連続で
+       「最後」と言われる状態になっていた。「最後」は1回目の出し直しにだけ使い、
+       2回目以降は回数を正直に伝える文面に変える */
+    var lastRound = fixRounds === 1 ? "（これが最後の出し直しです。1回で直せなかった項目は、直せない理由を1行ずつ挙げるだけでよく、そのまま残して構いません）"
+      : fixRounds >= 2 ? "（出し直しは既に" + fixRounds + "回行っています。残った項目は直せない理由を1行ずつ挙げるだけでよく、そのまま残して構いません）"
+      : "";
+    return lastRound + "以下のRR-CHECKの不備をすべて一度に修正し、" + target +
+      "出し直す前にKITの執筆側チェック（出力前の自己チェック）を再実行し、指摘箇所以外の文・引用・構成は変えないでください。" +
+      "PART本文の再貼り付けは不要です（この会話の結果一覧と骨格から書き直してください）。出し直しは必ずPART全体で、断片は取り込まれません。" +
+      (dupText ? "\n" + dupText : "") + "\n" +
+      lines.join("\n");
+  }
+
+  function escapeHtml(s) {
+    var d = document.createElement("div");
+    d.textContent = s;
+    return d.innerHTML;
+  }
+
+  function updatePreview(html) {
+    if (!html.trim()) {
+      previewPanel.classList.remove("is-visible");
+      return;
+    }
+    iframe.srcdoc = html;
+    previewPanel.classList.add("is-visible");
+  }
+
+  /* ---- PARTの一時保持（このタブだけ。sessionStorage） ---- */
+  var partStore = { n: 0, rid: "", title: "", parts: {}, reset: null };
+  var currentHtml = "";
+  /* 「不備をコピー」を押した回数（クリアでリセット）。2回目以降も赤が残るなら、
+     多くはPARTの混在が原因なので、貼り直しを案内する（無限ループを防ぐ） */
+  var fixRounds = 0;
+  /* 直近の出来事の通知（取り込んだ・差し替えた・破棄した等）。状態に応じた案内文とは
+     別に保持し、updateStatusUI が毎回この2つから notice を組み立て直す
+     （追記していくと、同じ状態で2回描画したときに案内が二重になる） */
+  var eventNotice = "";
+
+  function persistStore() {
+    try {
+      if (partStore.n || Object.keys(partStore.parts).length) sessionStorage.setItem(STORE_KEY, JSON.stringify(partStore));
+      else sessionStorage.removeItem(STORE_KEY);
+    } catch (e) { /* 保存できない環境では保持しないだけ */ }
+  }
+  function restoreStore() {
+    try {
+      var raw = sessionStorage.getItem(STORE_KEY);
+      if (!raw) return false;
+      var obj = JSON.parse(raw);
+      if (!(obj && obj.parts && typeof obj.parts === "object")) return false;
+      var n = parseInt(obj.n, 10);
+      n = (n > 0 && n <= RR.MAX_PARTS) ? n : 0;
+      /* obj.parts はセッションストレージ由来で、旧バージョンや破損データが混ざりうる。
+         キーが1〜n範囲の整数でなく、値が {body: string, ...} の形でなければ
+         その枠は捨てる（assembleParts等がbodyを文字列として扱う前提を守る） */
+      var cleanParts = {};
+      Object.keys(obj.parts || {}).forEach(function (k) {
+        var kn = parseInt(k, 10);
+        var v = obj.parts[k];
+        if (kn >= 1 && kn <= n && v && typeof v === "object" && typeof v.body === "string") {
+          cleanParts[kn] = v;
+        }
+      });
+      partStore = {
+        n: n,
+        rid: typeof obj.rid === "string" ? obj.rid : "",
+        title: typeof obj.title === "string" ? obj.title : "",
+        parts: cleanParts,
+        reset: (obj.reset && typeof obj.reset === "object") ? obj.reset : null
+      };
+      return true;
+    } catch (e) { /* ignore */ }
+    return false;
+  }
+
+  /* 2026-09-03(バグ再修正・A12): 保存できない環境（容量超過等）では再読み込み時に古い
+     蓄積へ無言で戻ってしまうため、次の状態表示にこの1行を足す（renderPartStatusが読む） */
+  var rlStoreWarning = "";
+  function persistResultListStore() {
+    try {
+      if (resultListStore.length) sessionStorage.setItem(RL_STORE_KEY, JSON.stringify(resultListStore));
+      else sessionStorage.removeItem(RL_STORE_KEY);
+      rlStoreWarning = "";
+    } catch (e) {
+      rlStoreWarning = "結果一覧の保存に失敗しました。このタブを閉じると蓄積が消えます。";
+    }
+  }
+  function restoreResultListStore() {
+    try {
+      var raw = sessionStorage.getItem(RL_STORE_KEY);
+      if (!raw) return false;
+      var obj = JSON.parse(raw);
+      if (!Array.isArray(obj)) return false;
+      resultListStore = obj.filter(function (b) { return b && typeof b === "object" && Array.isArray(b.claims); });
+      return resultListStore.length > 0;
+    } catch (e) { /* ignore */ }
+    return false;
+  }
+
+  /* notices（PARTセットの取り違え防止の通知）を最初に表示し、続けて差し替え・受領状況を出す。
+     この関数は「副次的な出来事」の行（#status-notice）だけを更新する。
+     バナーの主状態（色・見出し・チップ・ボタンの活性）は updateStatusUI が別に決める */
+  function renderPartStatus(st, warnings, replaced, notices) {
+    var lines = [];
+    (notices || []).forEach(function (n) { lines.push(n); });
+    if (replaced && replaced.length) lines.push("PART " + replaced.join(", ") + " を差し替えました");
+    if (st && st.message) lines.push(st.message);
+    (warnings || []).forEach(function (w) { lines.push(w); });
+    if (rlStoreWarning) lines.push(rlStoreWarning);
+    eventNotice = lines.join("。");
+    updateStatusUI();
+  }
+
+  /* 4状態: empty（未着手）｜collecting（PART届き待ち）｜needs-fix（赤あり）｜done（完成） */
+  function currentUiState() {
+    if (partStore.n) {
+      var st = RR.partStatus(partStore);
+      if (!st.complete) return "collecting";
+    }
+    if (!currentHtml) return "empty";
+    /* local:true（例: 重複ランドマーク）はAIに送らない不備だが、赤である以上
+       「完成です」と言ってはいけない。issueTextには含めないので、ここではuiState
+       だけを needs-fix にする */
+    var hasAction = (lastResults || []).some(function (r) { return !r.ok && kindOf(r) === "action"; });
+    return hasAction ? "needs-fix" : "done";
+  }
+
+  /* バナーの見出し・チップと、ボタンの活性・発光をまとめて更新する。
+     状態が変わりうるすべての操作（intake・finalize・クリア・起動時の復元）の後に呼ぶ */
+  function updateStatusUI() {
+    var state = currentUiState();
+    if (intakeHeading) {
+      var suffix = "";
+      if (state === "collecting") {
+        var st = RR.partStatus(partStore);
+        if (st.missing.length) suffix = "（あと PART " + st.missing.join("・") + "）";
+      }
+      intakeHeading.textContent = "1. 届いたPARTを貼り付け" + suffix;
+    }
+    if (statusChips) {
+      statusChips.innerHTML = "";
+      if (state === "collecting" && partStore.n) {
+        var stC = RR.partStatus(partStore);
+        for (var k = 1; k <= stC.n; k++) {
+          var got = stC.received.indexOf(k) >= 0 && stC.missing.indexOf(k) < 0;
+          var chip = document.createElement("span");
+          chip.className = "part-chip" + (got ? " got" : "");
+          chip.textContent = (got ? "● " : "○ ") + "PART " + k;
+          statusChips.appendChild(chip);
+        }
+      }
+    }
+    /* 状態に応じた案内文。出来事の通知（eventNotice）と合わせて notice を組み立てる */
+    var guidance = "";
+    if (statusTitle) {
+      if (state === "collecting") {
+        statusTitle.textContent = "次の操作: AIチャットに「次」と返信し、届いたPARTをそのまま上の欄へ貼り付けてください";
+      } else if (state === "needs-fix") {
+        var n = (lastResults || []).filter(function (r) { return !r.ok && !r.local && kindOf(r) === "action"; }).length;
+        if (n > 0) {
+          statusTitle.textContent = "×の項目が" + n + "件 → 「不備をコピー」を押してAIチャットに貼り付けてください";
+          /* 常設の説明文を置かない代わりに、赤が出たときだけ貼り戻しの作法を出す */
+          guidance = "修正版PARTは、クリアせずそのまま上の欄へ貼ると置き換わります（直したPARTだけでかまいません）";
+          if (fixRounds >= 1) {
+            /* 出し直しは1回まで。2回目以降も残る赤は、直させ続けるより
+               そのまま保存させたほうがよい（ユーザー方針） */
+            /* 2026-09-03(7回目・初実走FB): 「×が残っている」と「保存して構わない」を
+               1文に同居させると矛盾に見える（実走FB）。判定文と案内文を分ける */
+            statusTitle.textContent = "×の項目が" + n + "件 残っています（AIでは直せない項目です）";
+            guidance = "出し直しは1回で十分です。残った不備はそのままで問題ありません。このまま「PDFとして保存」して構いません。もう一度だけ直したい場合は「不備をコピー」を押してください";
+          }
+          if (fixRounds >= 2) {
+            guidance += "。同じ不備が" + fixRounds + "回続く場合、多くはPARTの混在が原因です。「クリア」を押してから全PARTを貼り直すと解消することがあります";
+          }
+        } else if (issueText(lastResults)) {
+          /* local:trueの赤（重複章等）しかないが、issueTextがPARTを特定できたため
+             AI向けの出し直し文を合成できている。この場合は「クリア」ではなく
+             「不備をコピー」を案内する（クリアして貼り直しても、原因がAI自身の
+             重複出力なら再発するだけで直らない） */
+          statusTitle.textContent = "×の項目があります → 「不備をコピー」を押してAIチャットに貼り付けてください";
+          guidance = "修正版PARTは、クリアせずそのまま上の欄へ貼ると置き換わります（直したPARTだけでかまいません）";
+        } else {
+          /* local:true の赤しかなく、PARTも特定できない場合。AIに送っても直せないので
+             「不備をコピー」は案内せず、貼り直しだけを促す（「クリアせずそのまま貼る」は誤り） */
+          statusTitle.textContent = "×の項目があります → 「クリア」を押してから全PARTを貼り直してください";
+        }
+      } else if (state === "done") {
+        statusTitle.textContent = "完成です。「PDFとして保存」を押してください（〇の黄色はそのままで大丈夫です）";
+        fixRounds = 0;
+      } else {
+        statusTitle.textContent = "";
+      }
+    }
+    if (statusNotice) {
+      statusNotice.textContent = [eventNotice, guidance].filter(function (t) { return !!t; }).join("。");
+    }
+    if (statusMascot) {
+      var art = state === "needs-fix" ? "mascot-confused"
+        : (state === "done" ? "mascot-report" : "mascot-point");
+      statusMascot.setAttribute("src", "assets/images/mascot/" + art + ".webp");
+    }
+    if (statusBanner) {
+      statusBanner.className = "status-banner" + (state === "empty" ? "" : " state-" + state);
+      var hasNotice = !!(statusNotice && statusNotice.textContent);
+      statusBanner.hidden = state === "empty" && !hasNotice;
+    }
+    if (printBtn) {
+      printBtn.disabled = state === "empty" || state === "collecting";
+      printBtn.classList.toggle("btn-glow-ready", state === "done");
+    }
+    if (downloadBtn) {
+      downloadBtn.disabled = state === "empty" || state === "collecting";
+    }
+    if (copyIssuesBtn) {
+      /* local:true の赤しかないときは「不備をコピー」が空文字列を返す（issueTextの
+         定義どおりAIには送らない）。光らせるとボタンを押しても何も起きないので、
+         実際に送る内容があるときだけ発光させる */
+      copyIssuesBtn.classList.toggle("btn-glow-attn", state === "needs-fix" && !!issueText(lastResults));
+    }
+  }
+
+  function syncCheckBtn() {
+    if (checkBtn) checkBtn.disabled = !input.value.trim();
+  }
+
+  /* partSetPlan の結果を実際にstoreへ適用する。破棄したslotを削除し、通知文を作る。
+     戻り値はfinalizeへ渡す情報（自動で整えました・のログ行用） */
+  function applyPlan(plan, notices) {
+    var title40 = plan.prevTitle ? plan.prevTitle.slice(0, 40) : "";
+    if (plan.mode === "newReport") {
+      plan.dropped.forEach(function (k) { delete partStore.parts[k]; });
+      fixRounds = 0;
+      /* 2026-09-03(バグ再修正・A10): 結果一覧の蓄積を残すと、前のレポートの主張が
+         新しいレポートの付録Cに混ざる（実走で確認した「別レポート」誤結合と同型） */
+      resultListStore = [];
+      persistResultListStore();
+      notices.push(title40
+        ? "別のレポートのPARTが届きました。前のレポート（" + title40 + "）のPART " + plan.dropped.join(", ") + " は破棄しました（結果一覧の蓄積も破棄しました）"
+        : "別のレポートのPARTが届きました。前のレポートのPART " + plan.dropped.join(", ") + " は破棄しました（結果一覧の蓄積も破棄しました）");
+    } else if (plan.mode === "newCount") {
+      /* 総数が変わった＝AIが分割をやり直した合図。出し直し回数もここでリセットする
+         （リセットしないと、新しい分割の1回目の修正がいきなり「これが最後です」に
+         なってしまう） */
+      fixRounds = 0;
+      plan.dropped.forEach(function (k) { delete partStore.parts[k]; });
+      if (plan.dropped.length) {
+        notices.push("PARTの総数が食い違っています（これまで " + plan.prevN + "、今回 " + plan.n +
+          "）。今回の " + plan.n + " を採用し、前の分割で受け取ったPART " + plan.dropped.join(", ") + " は破棄しました");
+      } else {
+        notices.push("PARTの総数が食い違っています（これまで " + plan.prevN + "、今回 " + plan.n + "）。今回の " + plan.n + " を採用します");
+      }
+    } else if (plan.unverified && plan.unverified.length) {
+      notices.push("（PART 1 より先に貼られたPART " + plan.unverified.join(", ") + " は、同じレポートのものとして扱います）");
+    }
+    partStore.n = plan.n;
+    partStore.rid = plan.id.rid;
+    partStore.title = plan.id.title;
+    /* 破棄は今回のPARTセットが完成した時点で「自動で整えました」に出す（結合を実行した
+       貼り付けと、破棄が起きた貼り付けが同じとは限らないため、完成まで持ち越す） */
+    if (plan.dropped.length) partStore.reset = { mode: plan.mode, dropped: plan.dropped };
+    return { mode: plan.mode, dropped: plan.dropped };
+  }
+
+  /* v5.1文書か（kit-version≥5.1）。PART／トークンが無い完成HTMLでも v5.1 の判定を有効にする。
+     DOMParserで読むので、meta属性の順序（name→contentかcontent→nameか）に左右されない */
+  function kitVersionAtLeast51(html) {
+    try {
+      var doc = new DOMParser().parseFromString(String(html || ""), "text/html");
+      var v = RR.metaContent(doc, "rr:kit-version");
+      /* ライト版は "lite-1.0" 形式（parseFloatはNaN）。完成HTMLの再検証でも
+         v5.1系の検査・修復が外れないよう、lite- 接頭辞も新形式として扱う */
+      return !!(v && (parseFloat(v) >= 5.1 || /^lite-/.test(v)));
+    } catch (e) { return false; }
+  }
+
+  /* 処理順: 結合 → 圧縮記法の展開 → ensureStyle → 自動修復 → 採番 → トークン置換 →
+     検査 → プレビュー。保存・印刷はすべて最終HTML（currentHtml）を使う */
+  /* finalizeへ最後に渡した入力（結果一覧が後から貼られたときに、同じ入力で
+     再finalizeして付録Cへ反映するために使う。PART組み上げ・レガシー完成HTMLの
+     どちらでも動くよう、渡された引数をそのまま保持する） */
+  var lastFinalizeSrc = null;
+
+  function finalize(html, info) {
+    info = info || {};
+    lastFinalizeSrc = { html: html, info: info };
+    /* AIが短い記法で書いた引用・参考文献を、従来と同一のHTMLへ戻す。
+       フルHTMLで書かれた文書には該当パターンが無いので素通しになる */
+    var expanded = RR.expandCompact(html);
+    var styled = RR.ensureStyle(expanded.html, CSS);
+    var v51 = !!(info.parts) || /\{\{\s*RR:/.test(styled.html) || kitVersionAtLeast51(styled.html);
+    /* 自動修復 → 採番 の順。修復で参考文献が増減するため採番より前に行う */
+    var rep = v51 ? RR.autoRepair(styled.html) : { html: styled.html, changed: false, merged: [], moved: [], removedTags: [], strippedAttrs: 0, unwrapped: 0 };
+    var rn = v51 ? RR.renumberRefs(rep.html) : { html: rep.html, changed: false, refCount: 0, unreferenced: [] };
+    var filled = RR.fillTokens(rn.html);
+    currentHtml = filled.html;
+    var checkInfo = {
+      strippedFence: !!info.strippedFence,
+      trimmedOutside: !!info.trimmedOutside,
+      parts: info.parts || null,
+      cssInjected: styled.hadStyle ? undefined : styled.injected,
+      cssFailed: styled.failed,
+      renumber: v51 ? rn : null,
+      repair: v51 ? rep : null,
+      partSet: info.partSet || null,
+      tokens: filled,
+      v51: v51,
+      resultList: resultListStore,
+      isLite: /^lite-/.test(RR.metaContent(new DOMParser().parseFromString(styled.html, "text/html"), "rr:kit-version") || "")
+    };
+    renderResults(RR.runChecks(currentHtml, checkInfo));
+    /* 結果一覧（S/C/N/RECEIPT行）が貼られていれば、付録B直後・免責の前に付録C（主張台帳）を
+       機械生成して差し込む——**検査(runChecks)の後**に行う（プレビュー・保存用のcurrentHtml
+       だけを変える）。検査より前に差し込むと、抜粋欄に含まれる `{…}`/`[[…]]`/`R|` のような
+       文字列を検査1・19が「未展開の記法」として検出し、AIの出力に存在しない文字列を
+       延々と直せと送る事故になる（実走で確認された、この機能自体が新たに作った派生赤） */
+    if (v51 && resultListStore.length) {
+      try {
+        var docForLedger = new DOMParser().parseFromString(currentHtml, "text/html");
+        var ledger = RR.buildLedgerHtml(docForLedger, currentHtml, resultListStore, rn.map || {});
+        if (ledger && ledger.html) currentHtml = injectLedger(currentHtml, ledger.html);
+      } catch (e) { /* 台帳生成に失敗してもレポート本体の検査・保存は止めない */ }
+    }
+    updatePreview(currentHtml);
+    updateStatusUI();
+  }
+
+  /* 付録C（主張台帳）のHTMLを、付録B（あれば）の直後・免責の前に差し込む。
+     .disclaimer が見つからなければ </body> の直前へ、それも無ければ末尾へ足す
+     （文字列レベルの挿入。DOM再直列化による属性順序の揺れを避ける） */
+  function injectLedger(html, sectionHtml) {
+    var s = String(html || "");
+    var mDisclaimer = /<div\s+class=["'][^"']*\bdisclaimer\b[^"']*["'][^>]*>/i.exec(s);
+    if (mDisclaimer) return s.slice(0, mDisclaimer.index) + sectionHtml + s.slice(mDisclaimer.index);
+    var mBody = /<\/body>/i.exec(s);
+    if (mBody) return s.slice(0, mBody.index) + sectionHtml + s.slice(mBody.index);
+    return s + sectionHtml;
+  }
+
+  /* PARTマーカーが無い入力を「完成レポート」として処理してよいか。
+     </html>が無ければ完成文書ではありえない（必須条件）。<h1>や参考文献の見出しだけを
+     根拠にすると、AIの応答からたまたま<h1>まとめ</h1>のような断片だけをコピーした
+     ケースまで「完成レポート」と誤判定し、収集済みPARTを無警告で全部消してしまう
+     （実走で確認された事故——貼り付け欄も空にならず、直前の状態に戻す手段が無かった） */
+  function looksLikeCompleteReport(html) {
+    var s = String(html || "");
+    return /<\/html>/i.test(s);
+  }
+
+  /* 2026-09-03(バグ再修正・A9): 1回の貼り付けに複数WPの結果一覧が続けて入っていても、
+     RR-RESULTヘッダの直前で区切って別ブロックにする（1つに潰すと後勝ちのWPで
+     全主張のIDが上書きされる）。ヘッダが無い・1個だけならそのまま1ブロック */
+  function splitResultBlocks(raw) {
+    var re = /^\s*(?:[-*|\s]*)RR-RESULT\b/mig;
+    var idxs = [];
+    var m;
+    while ((m = re.exec(raw))) idxs.push(m.index);
+    if (idxs.length <= 1) return [raw];
+    var segs = [];
+    for (var i = 0; i < idxs.length; i++) segs.push(raw.slice(idxs[i], i + 1 < idxs.length ? idxs[i + 1] : raw.length));
+    return segs;
+  }
+
+  /* 2026-09-03(バグ再修正・A12): 完結済み（receiptあり）のブロックが完全に同一なら
+     蓄積しない（同じ結果一覧を2回貼った場合の二重化防止）。分割途中のブロック
+     （receipt無し）は常に別物として積む */
+  function pushResultListBlock(rl) {
+    if (rl.receipt) {
+      var sig = (rl.wp || "") + "|" + rl.receipt + "|" + rl.claimCount;
+      var dup = resultListStore.some(function (b) { return b.receipt && ((b.wp || "") + "|" + b.receipt + "|" + b.claimCount) === sig; });
+      if (dup) return false;
+    }
+    resultListStore.push(rl);
+    return true;
+  }
+
+  function intake(raw) {
+    /* 結果一覧（S/C/N/RECEIPT行）の貼り付けはPART・完成レポートの取り込みとは別経路。
+       レポートが既に完成していればその場で付録Cへ反映し、まだなければ蓄積するだけで
+       「レポートが完成したら反映される」旨を伝える（貼り付け欄は空にする） */
+    if (RR.looksLikeResultList(raw)) {
+      /* S/C/RECEIPT/N行が1つも実際には解析できなかったブロックは結果一覧として
+         蓄積せず、以降の通常のPART・完成レポート判定へ回す（受け取り途中の断片
+         保護を誤って迂回させないため）。§8.1のN/RECEIPTだけの最終分割ブロックも
+         claimCount/sourceCountが0になるため、unconfirmed/receiptも判定に含める */
+      var blocks = splitResultBlocks(raw).map(RR.parseResultList)
+        .filter(function (rl) { return rl.claimCount || rl.sourceCount || rl.unconfirmed.length || rl.receipt; });
+      if (blocks.length) {
+        var addedCount = 0, claimTotal = 0;
+        blocks.forEach(function (rl) { claimTotal += rl.claimCount; if (pushResultListBlock(rl)) addedCount++; });
+        persistResultListStore();
+        input.value = "";
+        syncCheckBtn();
+        if (currentHtml && lastFinalizeSrc) {
+          eventNotice = "結果一覧を取り込みました（主張 " + claimTotal + "件）。付録Cへ反映します";
+          finalize(lastFinalizeSrc.html, lastFinalizeSrc.info);
+        } else {
+          eventNotice = "結果一覧を取り込みました（主張 " + claimTotal + "件）。レポートが完成すると付録Cに反映されます";
+          updateStatusUI();
+        }
+        return { resultList: true, claimCount: claimTotal };
+      }
+    }
+    var res = RR.parseParts(raw);
+    if (res.legacy) {
+      /* PART受領が進行中（partStore.nがある）のに、マーカーもレポートらしい構造も無い
+         入力が来た場合だけ「断片」として扱う。受領前のまっさらな状態では従来どおり
+         レガシー完成HTMLとして処理する（旧テンプレ・軽量な入力の検証用途を壊さない） */
+      if (partStore.n && !looksLikeCompleteReport(res.norm.html)) {
+        var stFrag = RR.partStatus(partStore);
+        renderPartStatus(stFrag, [], [], ["レポートの一部のようです。正しいPARTを貼り直してください（受け取り済みのPARTは消えていません）"]);
+        resultsBox.classList.remove("is-visible");
+        previewPanel.classList.remove("is-visible");
+        /* 他の取り込み経路は全て貼り付け欄を空にして終わる。ここだけ空にしないと、
+           次に正しいPARTを貼ったときにこの断片と連結されてしまい、キャレット位置
+           次第ではRR-PARTマーカーが分断されてレガシー扱い（＝収集の巻き戻し）を
+           誘発しうる */
+        input.value = "";
+        syncCheckBtn();
+        return { legacy: true, complete: false, fragment: true };
+      }
+      /* 前回の受領途中だったPARTの表示（「未受領: 2, 3」等）が、完結した従来形式（マーカー
+         無し）の文書を貼り付けた後まで残らないようにする。
+         finalize は状態バナーへ新しい案内を書くので、消すのはその前に行う */
+      var hadParts = !!(partStore.n || Object.keys(partStore.parts).length);
+      if (hadParts) {
+        /* PART受領の途中で完成HTMLが貼られた場合。storeを畳まないと状態が
+           永久にcollectingのまま残り、印刷・ダウンロードが無効化され続ける */
+        partStore = { n: 0, rid: "", title: "", parts: {}, reset: null };
+        persistStore();
+        fixRounds = 0;
+      }
+      eventNotice = (res.warnings || []).join("。");
+      if (hadParts) eventNotice = [eventNotice, "PARTの受け取りを中断し、完成レポートとして処理しました"].filter(function (t) { return !!t; }).join("。");
+      finalize(res.norm.html, res.norm);
+      input.value = "";
+      syncCheckBtn();
+      return { legacy: true, complete: true };
+    }
+    var replaced = [];
+    var notices = [];
+    var warnings = res.warnings.slice();
+    var plan = RR.partSetPlan(partStore, res);
+    applyPlan(plan, notices);
+    res.parts.forEach(function (p) {
+      if (partStore.parts[p.k]) replaced.push(p.k);
+      partStore.parts[p.k] = { body: p.body, hasEnd: p.hasEnd, endedByNextMarker: p.endedByNextMarker, at: Date.now() };
+    });
+    persistStore();
+    var st = RR.partStatus(partStore);
+    /* 何を取り込んだかを最初に言う。貼り付け欄は自動で空にするので、
+       「取り込まれたのか」「もう一度貼るべきか」で迷わせない */
+    var took = res.parts.map(function (p) { return p.k; }).sort(function (a, b) { return a - b; });
+    if (took.length) notices.push("PART " + took.join("、") + " を取り込みました");
+    renderPartStatus(st, warnings, replaced, notices);
+    if (st.complete) {
+      var partSet = partStore.reset || null;
+      partStore.reset = null;
+      persistStore();
+      finalize(RR.assembleParts(partStore), { strippedFence: false, trimmedOutside: false, parts: st, partSet: partSet });
+    } else {
+      resultsBox.classList.remove("is-visible");
+      previewPanel.classList.remove("is-visible");
+    }
+    /* 完成・未完成のどちらでも貼り付け欄を空にする（次を貼るときに前の内容を
+       消すべきか迷わせないため。取り込み結果は状態バナーに出している） */
+    input.value = "";
+    syncCheckBtn();
+    return { legacy: false, complete: st.complete, status: st, plan: plan };
+  }
+
+  checkBtn.addEventListener("click", function () {
+    if (!ensureRR()) return;
+    var raw = input.value;
+    if (!raw.trim()) {
+      if (partStore.n && RR.partStatus(partStore).complete) {
+        finalize(RR.assembleParts(partStore), { parts: RR.partStatus(partStore) });
+        return;
+      }
+      renderResults([{ ok: false, kind: "action", label: "まだ何も貼られていません", title: "まだ何も貼られていません", detail: "AIチャットが返したコードブロックを上のボックスに貼ってください。" }]);
+      previewPanel.classList.remove("is-visible");
+      updateStatusUI();
+      return;
+    }
+    intake(raw);
+  });
+
+  input.addEventListener("input", syncCheckBtn);
+
+  /* 貼り付け直後に自動で検証・プレビュー（「検証してプレビュー」の1クリックを省く）。
+     貼り付け内容がtextareaに反映されるのはpasteイベントの後なので、次のtickで実行する。 */
+  input.addEventListener("paste", function () {
+    setTimeout(function () {
+      syncCheckBtn();
+      if (input.value.trim()) checkBtn.click();
+    }, 0);
+  });
+
+  /* URLが …viewer.html#paste のときだけ、クリップボードの内容を読んで自動検証する。
+     レポートHTML（<!DOCTYPE・<html・RR-PART を含む）でなければ何もせず案内だけ出す
+     （他人のクリップボードの中身を画面に出さないため） */
+  function tryClipboardPaste() {
+    if ((location.hash || "").toLowerCase() !== "#paste") return;
+    var pasteHint = document.getElementById("paste-hint");
+    var hint = function () {
+      if (!pasteHint) return;
+      pasteHint.hidden = false;
+      pasteHint.textContent = "クリップボードからの自動読み込みはできませんでした。上のボックスに貼り付けてください（Ctrl+V／⌘+V）。";
+    };
+    if (!(navigator.clipboard && navigator.clipboard.readText)) { hint(); return; }
+    navigator.clipboard.readText().then(function (t) {
+      if (t && /<!DOCTYPE|<html|RR-PART/i.test(t)) {
+        input.value = t;
+        syncCheckBtn();
+        checkBtn.click();
+      } else {
+        hint();
+      }
+    }, hint);
+  }
+
+  clearBtn.addEventListener("click", function () {
+    input.value = "";
+    currentHtml = "";
+    partStore = { n: 0, rid: "", title: "", parts: {}, reset: null };
+    persistStore();
+    resultListStore = [];
+    persistResultListStore();
+    lastFinalizeSrc = null;
+    lastResults = [];
+    fixRounds = 0;
+    resultsBox.classList.remove("is-visible");
+    previewPanel.classList.remove("is-visible");
+    if (issueActions) issueActions.hidden = true;
+    eventNotice = "";
+    iframe.srcdoc = "";
+    syncCheckBtn();
+    updateStatusUI();
+    input.focus();
+  });
+
+  printBtn.addEventListener("click", function () {
+    /* PDF保存時のファイル名の初期値になるよう、印刷直前だけページ・iframeの
+       タイトルをレポート名に差し替える（終わったら元に戻す） */
+    var origTitle = document.title;
+    var pdfName = RR.pdfTitle(currentHtml);
+    var restored = false;
+    var restore = function () {
+      if (restored) return;
+      restored = true;
+      document.title = origTitle;
+      window.removeEventListener("afterprint", restore);
+    };
+    try {
+      document.title = pdfName;
+      if (iframe.contentDocument) iframe.contentDocument.title = pdfName;
+      window.addEventListener("afterprint", restore);
+      setTimeout(restore, 4000);
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+    } catch (e) {
+      restore();
+      window.alert("印刷を開始できませんでした。「HTMLをダウンロード」で保存したファイルをブラウザで開き、Ctrl+P（⌘+P）で印刷してください。");
+    }
+  });
+
+  downloadBtn.addEventListener("click", function () {
+    var html = currentHtml;
+    if (!html.trim()) {
+      window.alert("先にレポートHTMLを貼り付けてください。");
+      return;
+    }
+    RR.downloadHtml(html);
+  });
+
+  function copyText(text, btn, okLabel, onSuccess) {
+    var done = function () {
+      if (onSuccess) onSuccess();
+      if (!btn) return;
+      var orig = btn.getAttribute("data-label") || btn.textContent;
+      btn.setAttribute("data-label", orig);
+      btn.textContent = okLabel || "コピーしました";
+      setTimeout(function () { btn.textContent = orig; }, 1800);
+    };
+    var fallback = function () {
+      var ta = document.createElement("textarea");
+      ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand("copy"); done(); } catch (e) { window.prompt("コピーできませんでした。以下を選択してコピーしてください", text); }
+      document.body.removeChild(ta);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(done, fallback);
+    else fallback();
+  }
+
+  if (copyIssuesBtn) {
+    copyIssuesBtn.addEventListener("click", function () {
+      var t = issueText(lastResults);
+      if (!t) { window.alert("不備はありません。"); return; }
+      /* コピーが実際に成功したときだけ回数を進める。失敗（クリップボード拒否・
+         フォールバックの手動コピーが必要なケース）まで数えると、直してもいない
+         ユーザーに「最後の出し直しです」と誤って伝えてしまう */
+      copyText(t, copyIssuesBtn, "コピーしました（AIチャットへ貼り付け）", function () {
+        fixRounds += 1;
+        updateStatusUI();
+      });
+    });
+  }
+
+  /* テストフック */
+  window.RRViewer = {
+    getHtml: function () { return currentHtml; },
+    getStore: function () { return partStore; },
+    getResults: function () { return lastResults; },
+    issueText: function () { return issueText(lastResults); },
+    intake: intake,
+    finalize: finalize,
+    uiState: currentUiState,
+    getFixRounds: function () { return fixRounds; }
+  };
+
+  /* 起動時: 貼り付け済みの結果一覧があれば先に復元する（finalizeが参照する） */
+  if (RR) restoreResultListStore();
+  /* 起動時: 受け取り途中のPARTがあれば復元する */
+  if (RR && restoreStore()) {
+    var st0 = RR.partStatus(partStore);
+    renderPartStatus(st0, [], []);
+    if (st0.complete) finalize(RR.assembleParts(partStore), { parts: st0 });
+  }
+  if (RR) tryClipboardPaste(); else ensureRR();
+})();
+</script>
+
+</body>
+</html>

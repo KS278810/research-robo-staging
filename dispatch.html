@@ -1,0 +1,920 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta name="robots" content="noindex">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>調査ワークベンチ（任意ツール） ｜ ResearchRobo</title>
+<meta name="description" content="任意ツール。標準の手順では不要です。Research KITの調査プロンプトの管理・結果の事前確認・経過時間の表示をブラウザ内だけで行うワークベンチ。貼り付けた内容はどこにも送信されません。">
+<link rel="canonical" href="https://ks278810.github.io/research-robo/dispatch.html">
+<meta name="robots" content="noindex">
+
+<link rel="icon" type="image/x-icon" href="assets/images/favicon.ico">
+<link rel="icon" type="image/png" sizes="512x512" href="assets/images/favicon-512.png">
+<link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@700;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+
+<style>
+*, *::before, *::after { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+:root {
+  --color-bg: #FAFBFC;
+  --color-bg-alt: #FFFFFF;
+  --color-main: #0F2A43;
+  --color-sub: #0D9488;
+  --color-sub-text: #0F766E;
+  --color-accent: #1D4ED8;
+  --color-accent-dark: #1740B0;
+  --color-text: #2D2D2D;
+  --color-mute: #6B7280;
+  --color-border: #E4E9EE;
+  --color-ok: #0F766E;
+  --color-bad: #B91C1C;
+  --color-warn: #B45309;
+  --font-heading: "Zen Maru Gothic", "Noto Sans JP", sans-serif;
+  --font-body: "Noto Sans JP", "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif;
+  --font-mono: "SF Mono", "Consolas", "Menlo", monospace;
+  --radius-md: 14px;
+  --radius-sm: 8px;
+  --shadow-sm: 0 2px 10px rgba(15, 42, 67, 0.06);
+}
+body { font-family: var(--font-body); color: var(--color-text); background: var(--color-bg); line-height: 1.7; }
+a { color: var(--color-accent); }
+.container { max-width: 1180px; margin-inline: auto; padding-inline: clamp(1rem, 4vw, 2rem); }
+header.site-header { border-bottom: 1px solid var(--color-border); background: rgba(250,251,252,0.9); position: sticky; top: 0; z-index: 10; }
+.site-header .container { display: flex; align-items: center; justify-content: space-between; height: 56px; }
+.brand { display: flex; align-items: center; gap: 0.5rem; font-family: var(--font-heading); font-weight: 700; color: var(--color-main); text-decoration: none; font-size: 1rem; }
+.brand-mark { width: 26px; height: 26px; }
+.back-link { font-size: 0.85rem; color: var(--color-mute); text-decoration: none; }
+.back-link:hover { color: var(--color-accent); }
+
+main { padding-block: clamp(1.5rem, 3vw, 2.5rem) 4rem; }
+h1 { font-family: var(--font-heading); color: var(--color-main); font-size: clamp(1.3rem, 1.1rem + 1vw, 1.75rem); margin: 0 0 0.5rem; }
+.lead { color: var(--color-mute); font-size: 0.9375rem; max-width: 66ch; margin: 0 0 1.5rem; }
+.privacy-note { display: flex; gap: 0.6rem; align-items: flex-start; background: #F0FBF8; border: 1px solid #BFE5DD; border-radius: var(--radius-sm); padding: 0.8rem 1rem; font-size: 0.85rem; color: var(--color-sub-text); margin-bottom: 1.5rem; }
+.privacy-note svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
+
+.panel { background: var(--color-bg-alt); border: 1px solid var(--color-border); border-radius: var(--radius-md); box-shadow: var(--shadow-sm); padding: 1.25rem; margin-bottom: 1.5rem; }
+.panel h2 { font-family: var(--font-heading); color: var(--color-main); font-size: 1.0625rem; margin: 0 0 0.75rem; }
+.panel .hint { color: var(--color-mute); font-size: 0.85rem; margin: 0 0 0.75rem; }
+
+textarea { width: 100%; min-height: 140px; font-family: var(--font-mono); font-size: 0.8rem; line-height: 1.5; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.85rem; resize: vertical; background: #FCFDFE; color: var(--color-text); }
+textarea:focus { outline: 2px solid var(--color-accent); outline-offset: 1px; }
+textarea.small { min-height: 90px; }
+
+.actions { display: flex; gap: 0.75rem; flex-wrap: wrap; margin-top: 1rem; align-items: center; }
+.btn { display: inline-flex; align-items: center; gap: 0.45rem; padding: 0.7rem 1.25rem; border-radius: var(--radius-sm); font-weight: 700; font-size: 0.875rem; border: none; cursor: pointer; font-family: inherit; }
+.btn-primary { background: linear-gradient(135deg, var(--color-accent), var(--color-sub-text)); color: #fff; box-shadow: var(--shadow-sm); }
+.btn-outline { background: transparent; color: var(--color-main); border: 1.5px solid var(--color-border); }
+.btn-outline:hover { border-color: var(--color-accent); color: var(--color-accent); }
+.btn-sm { padding: 0.45rem 0.85rem; font-size: 0.8rem; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn[data-copied="true"] { background: var(--color-ok); color: #fff; border-color: var(--color-ok); }
+
+.progress { display: flex; align-items: center; gap: 0.75rem; margin: 0.25rem 0 1rem; font-size: 0.9rem; color: var(--color-main); font-weight: 700; }
+.progress-bar { flex: 1; height: 10px; background: #E9EEF3; border-radius: 999px; overflow: hidden; }
+.progress-bar > span { display: block; height: 100%; background: linear-gradient(90deg, var(--color-accent), var(--color-sub)); width: 0; transition: width .3s; }
+
+.wp-grid { display: grid; grid-template-columns: 1fr; gap: 0.9rem; }
+.wp-card { border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.9rem 1rem; background: #fff; display: flex; flex-direction: column; gap: 0.55rem; }
+.wp-card[data-status="running"] { border-color: #93C5FD; background: #F5F9FF; }
+.wp-card[data-status="done"] { border-color: #99E0D2; background: #F0FBF8; }
+.wp-head { display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+.wp-num { font-family: var(--font-heading); color: var(--color-accent); font-weight: 900; font-size: 1.05rem; }
+.wp-name { font-weight: 700; color: var(--color-main); font-size: 0.95rem; flex: 1; }
+.wp-meta { font-size: 0.75rem; color: var(--color-mute); }
+.wp-meta code { font-family: var(--font-mono); background: #F1F4F8; padding: 0 0.3rem; border-radius: 4px; }
+.wp-row { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; }
+.wp-status { font-size: 0.8rem; padding: 0.35rem 0.5rem; border: 1px solid var(--color-border); border-radius: 6px; font-family: inherit; color: var(--color-text); background: #fff; }
+.wp-links { font-size: 0.78rem; color: var(--color-mute); }
+.wp-links a { margin-right: 0.6rem; white-space: nowrap; }
+.wp-elapsed { font-size: 0.75rem; color: var(--color-warn); }
+.wp-yield { font-size: 0.82rem; color: var(--color-main); background: #F1F4F8; border-radius: 6px; padding: 0.35rem 0.6rem; line-height: 1.6; }
+.wp-yield .warn { color: var(--color-warn); font-weight: 700; }
+.wp-result-list { list-style: none; margin: 0.25rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+
+.dr-hint { font-size: 0.8rem; color: var(--color-mute); border-top: 1px dashed var(--color-border); margin-top: 1rem; padding-top: 0.75rem; }
+.dr-hint strong { color: var(--color-main); }
+
+.check-list { list-style: none; margin: 0.75rem 0 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.check-item { display: flex; gap: 0.6rem; align-items: flex-start; font-size: 0.875rem; padding: 0.5rem 0.65rem; border-radius: var(--radius-sm); }
+.check-item.ok { background: #F0FBF8; }
+.check-item.bad { background: #FEF2F2; }
+.check-item.warn { background: #FFF7ED; }
+.check-item.info { background: #F1F4F8; }
+.check-icon { flex-shrink: 0; width: 18px; height: 18px; margin-top: 1px; }
+.check-item.ok .check-icon { color: var(--color-ok); }
+.check-item.bad .check-icon { color: var(--color-bad); }
+.check-item.warn .check-icon { color: var(--color-warn); }
+.check-item.info .check-icon { color: var(--color-mute); }
+.check-detail { color: var(--color-mute); font-size: 0.8125rem; margin-top: 0.15rem; }
+.empty-hint { color: var(--color-mute); font-size: 0.875rem; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+footer.site-footer { border-top: 1px solid var(--color-border); padding-block: 1.5rem; font-size: 0.8rem; color: var(--color-mute); text-align: center; }
+footer.site-footer a { color: var(--color-mute); }
+
+@media (max-width: 600px) {
+  .actions { flex-direction: column; align-items: stretch; }
+  .btn { justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="container">
+    <a href="index.html" class="brand">
+      <img class="brand-mark" src="assets/images/logo-mark.svg" alt="" width="26" height="26" aria-hidden="true">
+      ResearchRobo
+    </a>
+    <a href="index.html" class="back-link">← 紹介ページへ戻る</a>
+  </div>
+</header>
+
+<main>
+  <div class="container">
+    <h1>調査ワークベンチ（任意ツール）</h1>
+    <p class="lead"><strong>任意ツールです。標準の手順では最初のチャットへ直接貼り付けます。</strong>このページはプロンプトの管理・経過時間の確認だけに使えます。調査プロンプトを並べて実行状況を管理したいときや、結果の件数を貼る前に確認したいときの補助として使ってください。調査が終わったチャットに出てきたレポートは、丸ごと最初のチャットへそのまま貼ってください（このページでは取り込みません。出典URLがほとんど無い場合だけ最初のチャットが「一覧」を案内します）。</p>
+
+    <div class="privacy-note">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      <span>貼り付けた内容はこのブラウザの中だけで処理されます。どこにも送信されません。プロンプトの一覧はこのブラウザにだけ保存され、同じページを開き直すと復元できます。</span>
+    </div>
+
+    <div class="panel" id="panel-1">
+      <h2>1. 調査プロンプトの応答を貼り付け</h2>
+      <p class="hint">最初のチャットが調査プロンプト（【1/1】…のコードブロック。分割された場合は複数）を返した応答を、先頭から末尾まで丸ごとコピーして貼り付けてください（貼り付けるだけで取り込みます。検証用プロンプトの応答も同じ手順で追加できます）。</p>
+      <textarea id="input-dispatch" placeholder="最初のチャットの応答を丸ごと貼り付け（【1/1】… のコードブロックを含む全文）"></textarea>
+      <div class="actions">
+        <button class="btn btn-primary" id="btn-parse" type="button">プロンプトを取り込む</button>
+        <button class="btn btn-outline" id="btn-reset" type="button">この調査の記録を消す</button>
+      </div>
+      <p class="empty-hint" id="parse-msg" style="margin-top:0.75rem;"></p>
+      <p class="empty-hint" id="paste-hint" hidden style="margin-top:0.25rem;"></p>
+      <p class="empty-hint" id="save-msg" hidden style="margin-top:0.25rem;color:var(--color-warn);"></p>
+      <!-- 取り込んだ調査プロンプトが0本のとき（WPカードが無い）でも、ここに貼った内容への
+           案内（PARTです／文章形式です／判別できません等）が見えるようにパネル1側に置く -->
+      <ul class="check-list" id="ingest-list"></ul>
+    </div>
+
+    <div class="panel" id="wp-panel" hidden>
+      <h2>2. 各プロンプトを実行して、結果を集める</h2>
+      <div class="progress"><span id="progress-label">0 / 0 回収済み</span><div class="progress-bar"><span id="progress-fill"></span></div></div>
+      <div class="wp-grid" id="wp-grid"></div>
+      <div class="dr-hint">
+        <p class="chat-target-row" style="margin:0 0 0.6rem;">
+          <label for="chat-target">「コピーして新しいチャットを開く」で開くAI：</label>
+          <select id="chat-target" class="wp-status">
+            <option value="https://chatgpt.com/">ChatGPT</option>
+            <option value="https://gemini.google.com/app">Gemini</option>
+            <option value="https://claude.ai/new">Claude</option>
+            <option value="">開かない</option>
+          </select>
+          （結果を取り込むとき、このAI名が調査プロンプトごとに記録されます）
+        </p>
+        <strong>Deep Researchのオン方法</strong>：ChatGPTは入力欄の「＋」または「ツール」から「Deep research」、Geminiはツール一覧の「Deep Research」、Claudeは「リサーチ」。
+        チャット名を「1 …」のように番号つきに変えておくと取り違えを防げます。調査中はタブを見張る必要はありません。
+        調査が終わったチャットに出てきたレポートを、丸ごと<strong>最初のチャットへそのまま貼ってください</strong>（このページでは取り込みません。出典URLがほとんど無い場合だけ最初のチャットが「一覧」を案内します）。行形式（<code>S1|</code>／<code>C1|</code>）で結果が出た場合はカードの「結果」欄に貼ると、資料・主張の件数と RESULT_COMPLETE の有無を貼る前に確認できます（任意。分割された場合はそのチャットに「次」を送ってください）。
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    &copy; 2026 Kohei Shintani, Ph.D. ／ <a href="index.html">ResearchRobo</a> ／ <a href="viewer.html">レポートビューア</a>
+  </div>
+</footer>
+
+<script src="assets/js/rr-checks.js"></script>
+<script>
+(function () {
+  "use strict";
+
+  var RR = window.RRChecks;
+
+  /* =====================================================================
+     0. 定数
+     ===================================================================== */
+  var STORAGE_KEY = "rr_dispatch_state_v1";
+  var CHAT_TARGET_KEY = "rr_dispatch_chat_target_v1";
+  var RESULT_TRIGGER = "一覧";               // Workerに結果一覧を要求する語
+
+  /* =====================================================================
+     1. DOM参照
+     ===================================================================== */
+  var $ = function (id) { return document.getElementById(id); };
+  var inputDispatch = $("input-dispatch");
+  var parseBtn = $("btn-parse");
+  var resetBtn = $("btn-reset");
+  var parseMsg = $("parse-msg");
+  var wpPanel = $("wp-panel");
+  var wpGrid = $("wp-grid");
+  var progressLabel = $("progress-label");
+  var progressFill = $("progress-fill");
+  var saveMsg = $("save-msg");
+  var pasteHint = $("paste-hint");
+  var chatTarget = $("chat-target");
+
+  /* =====================================================================
+     2. 状態（localStorage 1キーだけ。プロンプトの一覧とカードの状態のみ保持）
+     ===================================================================== */
+  var state = { researchId: "", wps: [] };
+
+  var saveWarned = false;
+  function save() {
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+    catch (e) {
+      if (!saveWarned && saveMsg) {
+        saveWarned = true;
+        saveMsg.hidden = false;
+        saveMsg.textContent = "この一覧をブラウザに保存できませんでした（プライベートモードや保存容量の制限が原因のことがあります）。このページを開いたまま作業してください。";
+      }
+    }
+  }
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      var s = raw ? JSON.parse(raw) : null;
+      if (!s || !Array.isArray(s.wps)) return;
+      /* 旧スキーマ・壊れた要素（null等）が混ざっていても初期化を止めない。
+         型を持たないフィールドには既定値を当て、undefinedがそのままカードに
+         描画されるのを防ぐ */
+      var wps = s.wps.filter(function (w) { return w && typeof w === "object" && typeof w.wpId === "string" && w.wpId; })
+        .map(function (w) {
+          return {
+            wpId: w.wpId,
+            researchId: typeof w.researchId === "string" ? w.researchId : "",
+            name: (typeof w.name === "string" && w.name) ? w.name : w.wpId,
+            num: (typeof w.num === "number" && isFinite(w.num)) ? w.num : 0,
+            text: typeof w.text === "string" ? w.text : "",
+            status: (w.status === "running" || w.status === "done") ? w.status : "todo",
+            startedAt: (typeof w.startedAt === "number" && w.startedAt > 0) ? w.startedAt : 0,
+            questions: Array.isArray(w.questions) ? w.questions : [],
+            period: typeof w.period === "string" ? w.period : "",
+            precheck: (w.precheck && typeof w.precheck === "object") ? w.precheck : undefined
+          };
+        });
+      wps.forEach(function (w, i) { if (!w.num) w.num = i + 1; });
+      state = { researchId: typeof s.researchId === "string" ? s.researchId : "", wps: wps };
+    } catch (e) { /* ignore */ }
+  }
+  /* v5.1までのワークベンチが使っていた台帳・レポートのキーが残っていれば、一度だけ掃除する
+     （v5.2でこのページから台帳・組版機能を削除したため、もう読まない） */
+  function cleanupLegacyKeys() {
+    try {
+      if (localStorage.getItem("rr_ledger_v1") !== null) localStorage.removeItem("rr_ledger_v1");
+      if (localStorage.getItem("rr_report_v1") !== null) localStorage.removeItem("rr_report_v1");
+    } catch (e) { /* ignore */ }
+  }
+
+  /* =====================================================================
+     3. 汎用ユーティリティ
+     ===================================================================== */
+  /* innerHTMLのテキスト直列化は " を実体参照にしないが、この関数は属性値の中でも使うため
+     自前で置き換える（貼り付け由来のWP_IDに " が入ると属性を抜け出せてしまう） */
+  function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML.replace(/"/g, "&quot;"); }
+  function parseNum(s) { var n = parseInt(RR.toHalfDigits(s), 10); return isNaN(n) ? 0 : n; }
+
+  /* ---------- クリップボード ---------- */
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", "");
+    ta.style.position = "fixed"; ta.style.opacity = "0";
+    document.body.appendChild(ta); ta.select();
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+  function copyText(text, btn, okLabel) {
+    /* 2回連続で押すと、2回目は「original」として成功ラベルを拾ってしまい、
+       ラベルが元に戻らなくなる。初回のラベルだけをボタン自身に覚えさせる */
+    if (!btn.dataset.origLabel) btn.dataset.origLabel = btn.textContent;
+    var original = btn.dataset.origLabel;
+    var finish = function (ok) {
+      btn.textContent = ok ? (okLabel || "コピーしました") : "コピーできませんでした";
+      btn.setAttribute("data-copied", ok ? "true" : "false");
+      if (btn._rrRestoreTimer) clearTimeout(btn._rrRestoreTimer);
+      btn._rrRestoreTimer = setTimeout(function () {
+        btn.textContent = original; btn.removeAttribute("data-copied"); btn._rrRestoreTimer = 0;
+      }, 1600);
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () { finish(true); }, function () { finish(fallbackCopy(text)); });
+    } else {
+      finish(fallbackCopy(text));
+    }
+  }
+
+  /* =====================================================================
+     4. パネル1: 調査プロンプトの切り出し
+     ===================================================================== */
+  function extractField(text, label) {
+    var m = text.match(new RegExp("^" + label + "[ \t]*[:：][ \t]*(.+)$", "m"));
+    return m ? m[1].trim() : "";
+  }
+
+  var RE_WORKER = /^MODE[ \t]*[:：][ \t]*WORKER/m;
+  var RE_WORKER_ANY = /MODE[ \t]*[:：][ \t]*WORKER/;
+  var RE_HEAD = /【\s*([0-9０-９]+)\s*[\/／]\s*([0-9０-９]+)\s*】[ \t]*([^\n]*)/;
+  var RE_HEAD_G = new RegExp(RE_HEAD.source, "g");
+  var RE_FENCE_LINE = /^[ \t]*(```|~~~)([a-zA-Z0-9_-]*)[ \t]*$/;
+
+  /* コードフェンスを行単位で走査する。言語タグつきの行はネストの開始として数えるため、
+     内部にコードブロックを含むEnvelopeでも外側のブロックを取り違えない。 */
+  function scanFences(lines) {
+    var blocks = [], i = 0;
+    while (i < lines.length) {
+      var mo = lines[i].match(RE_FENCE_LINE);
+      if (!mo) { i++; continue; }
+      var fenceKind = mo[1];
+      var depth = 1, body = [], closed = false, j = i + 1;
+      for (; j < lines.length; j++) {
+        var mm = lines[j].match(RE_FENCE_LINE);
+        /* ```で開いたら```で、~~~で開いたら~~~で閉じる。種類が違う行は
+           フェンスの区切りではなく本文としてそのまま数える */
+        if (mm && mm[1] === fenceKind) {
+          if (mm[2]) { depth++; body.push(lines[j]); continue; }
+          depth--;
+          if (depth === 0) { closed = true; break; }
+          body.push(lines[j]);
+          continue;
+        }
+        body.push(lines[j]);
+      }
+      if (!closed) { i++; continue; }
+      blocks.push({ body: body.join("\n"), start: i, end: j });
+      i = j + 1;
+    }
+    return blocks;
+  }
+
+  function lastHead(text) {
+    var head = null, hm;
+    RE_HEAD_G.lastIndex = 0;
+    while ((hm = RE_HEAD_G.exec(text))) head = hm;
+    return head;
+  }
+  function allHeads(text) {
+    var out = [], hm;
+    RE_HEAD_G.lastIndex = 0;
+    while ((hm = RE_HEAD_G.exec(text))) out.push(hm);
+    return out;
+  }
+  /* 1つのフェンスにEnvelopeが複数本まとめて入っていることがある。MODE: WORKERの
+     直前で分割し、そのフェンス直前までに現れた見出し群と後ろから順に対応付ける
+     （1本だけの場合は従来のlastHeadと同じ結果になる） */
+  var RE_WORKER_SPLIT = /^(?=MODE[ \t]*[:：][ \t]*WORKER)/m;
+
+  function cleanBody(text) {
+    var kept = String(text).split("\n").filter(function (ln) {
+      if (/^\s*\[クリック[^\n]*\)\s*$/.test(ln)) return false;
+      if (/^\s*開けない場合は/.test(ln)) return false;
+      return true;
+    });
+    return kept.join("\n").trim();
+  }
+
+  /* Envelope本文から調査質問・期間を拾う（カードの表示用） */
+  function parseEnvelopeMeta(body) {
+    var qs = [];
+    var seen = {};
+    String(body).split("\n").forEach(function (ln) {
+      var m = ln.match(/^[ \t]*[-・*]?[ \t]*Q([0-9]{1,2})[ \t]*[:：][ \t]*(.*)$/);
+      if (m) {
+        var q = "Q" + parseNum(m[1]);
+        if (!seen[q]) { seen[q] = true; qs.push({ q: q, text: m[2].trim() }); }
+      }
+    });
+    var period = extractField(body, "情報対象期間") || extractField(body, "期間") || extractField(body, "対象期間");
+    return { questions: qs, period: period };
+  }
+
+  function parseDispatch(text) {
+    var src = String(text || "").replace(/\r\n?/g, "\n");
+    var lines = src.split("\n");
+    var found = [];
+
+    var blocks = scanFences(lines);
+    var prevEnd = 0;
+    blocks.forEach(function (b) {
+      if (!RE_WORKER.test(b.body)) return;
+      var heads = allHeads(lines.slice(prevEnd, b.start).join("\n"));
+      var chunks = b.body.split(RE_WORKER_SPLIT).filter(function (c) { return RE_WORKER.test(c); });
+      chunks.forEach(function (c, k) {
+        /* 見出しはフェンス直前にまとまっているのが通常なので、末尾の見出しから
+           チャンク数ぶんを逆順に割り当てる（1本だけなら従来どおり最後の見出し） */
+        var hi = heads.length - chunks.length + k;
+        found.push({ body: c.trim(), head: hi >= 0 ? heads[hi] : null });
+      });
+      prevEnd = b.end + 1;
+    });
+
+    if (!found.length && RE_WORKER.test(src)) {
+      var heads = [];
+      lines.forEach(function (ln, i) { if (RE_HEAD.test(ln)) heads.push(i); });
+      heads.forEach(function (start, k) {
+        var end = k + 1 < heads.length ? heads[k + 1] : lines.length;
+        var body = cleanBody(lines.slice(start + 1, end).join("\n"));
+        if (!RE_WORKER.test(body)) return;
+        found.push({ body: body, head: lines[start].match(RE_HEAD) });
+      });
+      if (!found.length) {
+        src.split(RE_WORKER_SPLIT).forEach(function (chunk) {
+          var body = cleanBody(chunk);
+          if (RE_WORKER.test(body)) found.push({ body: body, head: null });
+        });
+      }
+    }
+
+    return found.map(function (f, idx) {
+      var wpId = cleanWpId(extractField(f.body, "WP_ID"));
+      var researchId = extractField(f.body, "RESEARCH_ID");
+      var name = (f.head && f.head[3] && f.head[3].trim()) || extractField(f.body, "担当") || ("プロンプト " + (idx + 1));
+      var num = f.head ? parseNum(f.head[1]) : (idx + 1);
+      var meta = parseEnvelopeMeta(f.body);
+      /* WP_IDが本文から読み取れない場合（Envelopeの記述ドリフト等）、"WP1"のような
+         採番にすると既存の本物のWP1カードとキーが衝突し、importWpsがその内容を
+         無言で上書きしてしまう（実地で確認しうる不具合）。衝突しない印付きの
+         仮IDにして、上書きではなく新規カードとして扱わせる */
+      return { wpId: wpId || ("WP_UNKNOWN" + (idx + 1)), researchId: researchId, name: name, num: num || (idx + 1), text: f.body, status: "todo", startedAt: 0, questions: meta.questions, period: meta.period };
+    });
+  }
+
+  function importWps(wps) {
+    if (!wps || !wps.length) return;
+    var rid = wps[0].researchId || state.researchId;
+    /* 記録にWPがあるのに研究IDが空（旧データ・研究ID未検出）だった場合も、
+       別の調査を取り込んだときは置き換える対象に含める */
+    if (state.wps.length && rid && state.researchId !== rid) {
+      state = { researchId: rid, wps: [] };
+    }
+    state.researchId = rid;
+    var baseNum = 0;
+    state.wps.forEach(function (w) { if (w.num > baseNum) baseNum = w.num; });
+    wps.forEach(function (w) {
+      var exists = state.wps.findIndex(function (x) { return wpKey(x.wpId) === wpKey(w.wpId); });
+      if (exists >= 0) {
+        state.wps[exists].text = w.text;
+        state.wps[exists].name = w.name;
+        state.wps[exists].questions = w.questions;
+        state.wps[exists].period = w.period;
+      } else {
+        /* 全件を再送された場合、新規プロンプトの番号は元々1..Nで正しいので
+           ずらさない。既存の番号と衝突するとき（検証系WPの追加等）だけ
+           後ろへ回す */
+        var clash = state.wps.some(function (x) { return x.num === w.num; });
+        if (clash && baseNum) w.num = baseNum + w.num;
+        state.wps.push(w);
+      }
+    });
+    state.wps.sort(function (a, b) { return a.num - b.num; });
+  }
+
+  /* =====================================================================
+     5. パネル2: WPカードの描画・経過時間
+     ===================================================================== */
+  function chatLinks() {
+    return '<a href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPT</a>' +
+      '<a href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini</a>' +
+      '<a href="https://claude.ai/new" target="_blank" rel="noopener">Claude</a>';
+  }
+  function elapsedText(wp) {
+    if (wp.status !== "running" || !wp.startedAt) return "";
+    var min = Math.max(0, Math.floor((Date.now() - wp.startedAt) / 60000));
+    return "実行中 " + min + "分経過";
+  }
+  function wpOf(el) {
+    var idx = parseInt(el.getAttribute("data-idx"), 10);
+    return isNaN(idx) ? null : state.wps[idx];
+  }
+  /* 貼り付け由来のWP_IDをセレクタ文字列に連結すると、引用符を含むIDでquerySelectorが
+     例外を投げ、貼り付けが無反応になる。属性値の等値比較で探す */
+  function findByAttr(sel, attr, val) {
+    var els = wpGrid.querySelectorAll(sel);
+    for (var i = 0; i < els.length; i++) if (els[i].getAttribute(attr) === val) return els[i];
+    return null;
+  }
+  function wpListEl(wpId) { return findByAttr("[data-wp-list]", "data-wp-list", wpId); }
+  /* AIが RESULT_COMPLETE: "WP01" のように引用符を付けたり、全角で
+     RESULT_COMPLETE：ＷＰ０１ と書いたりすることがある。カード側のIDと
+     一致するよう、引用符除去＋全角英数字の半角化を行う（大文字化はしない。
+     data-wp属性の値と一致させる必要があるため） */
+  function cleanWpId(v) {
+    var s2 = String(v == null ? "" : v).replace(/^["'`\u300c\u300e]+|["'`\u300d\u300f]+$/g, "");
+    s2 = RR.toHalfDigits(s2).replace(/[\uFF21-\uFF3A\uFF41-\uFF5A]/g, function (c) {
+      return String.fromCharCode(c.charCodeAt(0) - 0xFEE0);
+    });
+    /* AIが文末に句読点を続けて書き、それがWP_IDの末尾に残ることがある。
+       WP_IDは英数字・ハイフン・アンダースコアの想定なので、それ以外の記号が
+       末尾に残っていれば安全に剥がしてよい。剥がさないとカードのdata-wpと
+       一致せず、結果が届いているのにカードが見つからない事故になる */
+    s2 = s2.replace(/[\u3002\u3001\uFF0E\uFF0C,.:;)\uFF09\]\u3011\u300f\u300d]+$/, "");
+    return s2;
+  }
+  /* 大文字小文字だけが違うID（wp01 と WP01）も同じカードとして扱うための比較用キー */
+  function wpKey(v) { return cleanWpId(v).toUpperCase(); }
+  function findWp(id) {
+    var k = wpKey(id);
+    for (var i = 0; i < state.wps.length; i++) if (wpKey(state.wps[i].wpId) === k) return state.wps[i];
+    return null;
+  }
+  /* カードの「結果」欄に貼った内容の事前確認（precheckLines）の結果表示だけ（台帳には入れない） */
+  function yieldRowHtml(wpId) {
+    var wpc = state.wps.filter(function (w) { return w.wpId === wpId; })[0];
+    var pc = wpc && wpc.precheck;
+    if (!pc) return "";
+    var label = pc.complete ? (pc.snippets ? "・抜粋補完" : pc.addendum ? "・追加分" : "・完結") : "・未完結";
+    /* Source Re-check WPはV行だけを返しC/S/N行を返さない設計のため、再描画時にも
+       検証件数を残す（貼付直後の表示だけにあると、ページ再描画のたび「0件」に
+       見えて完結した検証結果が失敗のように映る） */
+    return "資料 " + pc.s + "／主張 " + pc.c + "／未確認 " + pc.n + (pc.v ? "／検証 " + pc.v : "") + "（行形式・事前確認" + label + "）";
+  }
+
+  function renderWps() {
+    wpPanel.hidden = state.wps.length === 0;
+    if (state.wps.length === 0) { wpGrid.innerHTML = ""; return; }
+    var total = state.wps.length;
+    var doneCount = state.wps.filter(function (w) { return w.status === "done"; }).length;
+    progressLabel.textContent = doneCount + " / " + total + " 回収済み";
+    progressFill.style.width = total ? Math.round(doneCount / total * 100) + "%" : "0";
+    /* renderWpsはグリッドを毎回作り直すため、.wp-resultへ貼った生テキストを
+       事前に退避して作り直した後に戻す。退避しないと、1枚のカードへ貼っただけで
+       全カードの入力欄が空に戻ってしまう（他のカードにまだ送信していない
+       貼り付け内容が残っていた場合、それも消える） */
+    var savedTextareaValues = {};
+    Array.prototype.forEach.call(wpGrid.querySelectorAll("textarea.wp-result"), function (ta) {
+      if (ta.value) savedTextareaValues[ta.getAttribute("data-wp") || ""] = ta.value;
+    });
+    wpGrid.innerHTML = "";
+    state.wps.forEach(function (wp, idx) {
+      var card = document.createElement("div");
+      card.className = "wp-card";
+      card.setAttribute("data-status", wp.status);
+      card.setAttribute("data-idx", idx);
+      card.setAttribute("data-wp", wp.wpId);
+      var yieldHtml = yieldRowHtml(wp.wpId);
+      card.innerHTML =
+        '<div class="wp-head"><span class="wp-num">' + esc(wp.num) + '</span><span class="wp-name">' + esc(wp.name) + "</span></div>" +
+        '<div class="wp-meta">チャット名の例：<code>' + esc(wp.num + " " + wp.name) + "</code></div>" +
+        '<div class="wp-row">' +
+        '<button class="btn btn-primary btn-sm" type="button" data-act="copy" data-idx="' + idx + '">コピーして新しいチャットを開く</button>' +
+        '<select class="wp-status" data-act="status" data-idx="' + idx + '" aria-label="状態">' +
+        '<option value="todo"' + (wp.status === "todo" ? " selected" : "") + ">未実行</option>" +
+        '<option value="running"' + (wp.status === "running" ? " selected" : "") + ">実行中</option>" +
+        '<option value="done"' + (wp.status === "done" ? " selected" : "") + ">回収済み</option>" +
+        "</select>" +
+        '<button class="btn btn-outline btn-sm" type="button" data-act="json" data-idx="' + idx + '">「' + RESULT_TRIGGER + '」をコピー</button>' +
+        '<span class="wp-elapsed">' + esc(elapsedText(wp)) + "</span>" +
+        "</div>" +
+        (yieldHtml ? '<div class="wp-yield">' + yieldHtml + "</div>" : "") +
+        '<textarea class="small wp-result" data-wp="' + esc(wp.wpId) + '" placeholder="この調査の結果を貼ると件数を事前確認します。最初のチャットへの貼り付けは別に行ってください（任意）"></textarea>' +
+        '<ul class="wp-result-list check-list" data-wp-list="' + esc(wp.wpId) + '"></ul>' +
+        '<div class="wp-links">手動で開く：' + chatLinks() + "</div>";
+      wpGrid.appendChild(card);
+      var savedVal = savedTextareaValues[wp.wpId];
+      if (savedVal) card.querySelector("textarea.wp-result").value = savedVal;
+    });
+  }
+
+  function updateElapsed() {
+    Array.prototype.forEach.call(wpGrid.querySelectorAll(".wp-card"), function (card) {
+      var wp = wpOf(card);
+      var el = wp && card.querySelector(".wp-elapsed");
+      if (el) el.textContent = elapsedText(wp);
+    });
+  }
+
+  /* =====================================================================
+     6. 結果（行形式）の事前チェック（precheckLines）
+     ===================================================================== */
+  var RE_LINES_COMPLETE = /^\s*(?:RESULT|PACKAGE)_COMPLETE[ \t]*[:：]\s*(\S+)([ \t]+(ADDENDUM|SNIPPETS))?/mi;
+  var RE_LINES_PART = /^\s*(?:RESULT|PACKAGE)_PART[ \t]*[:：]\s*(\S+)\s+(\d+)\s*\/\s*(\d+)/m;
+
+  /* 改行コードとセル区切りの全角｜を統一する。precheckLinesとroutePasteの両方が使う */
+  function normText(text) { return String(text || "").replace(/\r\n?/g, "\n").replace(/｜/g, "|"); }
+  /* 行頭の | ・箇条書き記号 ・番号付きリスト ・強調(**) を剥がし、
+     セル区切りの " | " を "|" に正規化してから S|/C|/N|/R|/V| の各行形式で分類できる形にする。
+     Markdownの表（| ... | 区切り＋---|---の区切り行）を貼っても同じ分類に乗る。
+     precheckLinesとroutePaste（行形式かどうかの判定）の両方がこれを使う */
+  function normLines(text) {
+    /* 行ごとの正規化はrr-checks.jsのnormResultListLineと同一実装（2026-09-03・A2で統合）。
+       別実装のままだと同じ結果一覧をdispatchは受理してもviewerは断片扱いする食い違いが起きる */
+    return normText(text).split("\n").map(RR.normResultListLine).filter(function (l) {
+      if (!l) return false;
+      if (/^(```|~~~)/.test(l)) return false;
+      if (/^:?-{2,}:?(\|:?-{2,}:?)+$/.test(l)) return false;   // Markdown表の区切り行(---|---)は除く
+      return true;
+    });
+  }
+
+  function precheckLines(text, wpHint) {
+    var lines = normLines(text);
+    /* RESULT_COMPLETE/RESULT_PART行も箇条書き・太字(**)で装飾されることがある
+       （routePasteの2026-08-30修正と同じ理由）。normText止まりの生テキストに
+       対して判定すると、装飾された行を「未完結」と誤判定し、
+       wpIdも空のままになってカードが見つからなくなる。routePasteと同じく
+       normLines済みの行に対して判定する */
+    var norm = lines.join("\n");
+    var out = { wpId: wpHint || "", s: 0, c: 0, n: 0, r: 0, v: 0, other: 0, complete: false, part: null, addendum: false, snippets: false, weak: 0, lines: lines.length };
+    lines.forEach(function (l) {
+      var bars = (l.match(/\|/g) || []).length;
+      if (/^S\d*\|/.test(l)) { out.s++; if (bars < 5) out.weak++; }
+      else if (/^C\d*\|/.test(l)) { out.c++; if (bars < 7) out.weak++; }
+      else if (/^N\|/.test(l)) out.n++;
+      else if (/^(R|RECEIPT)\|/.test(l)) out.r++;
+      else if (/^V\|/.test(l)) out.v++;
+      else if (/^(RR-RESULT|RESEARCH_ID|WP_ID|MODE|RESULT_|PACKAGE_)/.test(l)) { /* ヘッダ・マーカー */ }
+      else out.other++;
+    });
+    var cm = norm.match(RE_LINES_COMPLETE);
+    var pm = norm.match(RE_LINES_PART);
+    if (cm) {
+      out.complete = true;
+      var tag = String(cm[3] || "").toUpperCase();
+      out.addendum = tag === "ADDENDUM"; out.snippets = tag === "SNIPPETS";
+      out.wpId = out.wpId || cleanWpId(cm[1]);
+    }
+    if (pm) { out.part = { k: parseNum(pm[2]), n: parseNum(pm[3]) }; out.wpId = out.wpId || cleanWpId(pm[1]); }
+    /* 2026-09-03(完成前の最終洗い出し・C4): normLinesが" | "を"|"に詰めるため、\S+だと
+       次の|区切りフィールド（例: WP1|PART）まで貪欲に飲み込んでいた。|で止める */
+    var hm = norm.match(/RR-RESULT[^\n]*WP_ID\s*[:：]\s*([^\s|]+)/);
+    if (hm) out.wpId = out.wpId || cleanWpId(hm[1]);
+    return out;
+  }
+
+  /* =====================================================================
+     7. 貼り付けルーター
+     ===================================================================== */
+  function routePaste(text) {
+    var t = String(text || "").trim();
+    if (!t) return "empty";
+    if (/<!--\s*RR-PART/i.test(t)) return "rrpart";
+    if (RE_WORKER_ANY.test(t)) return "envelope";
+    if (/^\s*(<!DOCTYPE|<html)/i.test(t)) return "legacy";
+    if (/^\s*RR-RESULT\s*\|/m.test(t)) return "lines";
+    /* 箇条書き・強調・番号付き・字下げされたS|/C|行も、precheckLinesと同じ正規化を
+       通してから判定する（そうしないと「一覧」の出力をそのまま貼っても
+       「判別できませんでした」になってしまう） */
+    var nl = normLines(t);
+    var normJoined = nl.join("\n");
+    var hasRow = nl.some(function (l) { return /^[SCNRV]\d*\|/.test(l); });
+    /* RESULT_COMPLETE/RESULT_PART行も箇条書き・強調で装飾されることがあるので、
+       生テキストではなく正規化済みの行に対して判定する */
+    if (RE_LINES_COMPLETE.test(normJoined) && hasRow) return "lines";
+    if (RE_LINES_PART.test(normJoined) && hasRow) return "lines";
+    if (nl.filter(function (l) { return /^[SC]\d*\|/.test(l); }).length >= 3) return "lines";
+    /* Markdown表（| ... | + ---|---区切り）は、S/C/N/R/V行がMarkdown表の見た目で
+       貼られたときだけ"lines"にする（hasRow必須）。DRレポート本文の通常の
+       データ表（例: 年度|台数|出典）まで"lines"に誤分類すると、正しい案内
+       （「一覧」と送って変換する）ではなく的外れな案内が出る（実地で確認された不具合） */
+    if (hasRow && /^\s*\|[^\n]*\|\s*$/m.test(t) && /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)+\|?\s*$/m.test(t)) return "lines";
+    if (/https?:\/\//.test(t)) return "prose";
+    return "unknown";
+  }
+
+  function showIngestResults(results) {
+    var leftovers = [];
+    results.forEach(function (r) {
+      var ul = r.wpId ? wpListEl(r.wpId) : null;
+      if (ul) renderList(ul, [r]);
+      else leftovers.push(r);
+    });
+    if (leftovers.length) renderList($("ingest-list"), leftovers);
+  }
+
+  function iconOk() { return '<svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 6L9 17l-5-5"/></svg>'; }
+  function iconBad() { return '<svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 6l12 12M18 6L6 18"/></svg>'; }
+  function iconWarn() { return '<svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v4m0 4h.01M10.3 3.9L1.8 18a2 2 0 001.7 3h17a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/></svg>'; }
+  function iconOf(level) { return level === "ok" ? iconOk() : level === "warn" || level === "info" ? iconWarn() : iconBad(); }
+
+  function renderList(ul, items) {
+    ul.innerHTML = "";
+    items.forEach(function (r) {
+      var li = document.createElement("li");
+      li.className = "check-item " + (r.level || (r.ok ? "ok" : "bad"));
+      li.innerHTML = iconOf(r.level || (r.ok ? "ok" : "bad")) +
+        "<div><div>" + esc(r.label) + "</div>" + (r.detail ? '<div class="check-detail">' + esc(r.detail) + "</div>" : "") + "</div>";
+      ul.appendChild(li);
+    });
+  }
+
+  function handleRouted(text, opts) {
+    opts = opts || {};
+    var kind = routePaste(text);
+    if (kind === "empty") return kind;
+    /* 前回の貼り付けで出た誘導文（判別できません等）を、次の貼り付けのたびに
+       一度クリアする。1枠に積み上げず、常に「直近の貼り付けへの案内」だけにする */
+    var ingestList0 = document.getElementById("ingest-list");
+    if (ingestList0) ingestList0.innerHTML = "";
+    if (kind === "rrpart" || kind === "legacy") {
+      showIngestResults([{ ok: false, level: "warn", wpId: opts.wpHint || "",
+        label: kind === "rrpart" ? "レポートのPART（<!-- RR-PART k/n -->）です。このページではなくビューアへ貼り付けてください"
+                                  : "完成したレポートのHTMLです。このページではなくビューアへ貼り付けてください",
+        detail: "viewer.html（レポートビューア）が結合・書式付与・検証・PDF化を行います。" }]);
+      return kind;
+    }
+    if (kind === "lines") {
+      var pc = precheckLines(text, opts.wpHint || "");
+      var completeLabel = pc.complete ? ("・完結（RESULT_COMPLETE" + (pc.addendum ? "・追加分" : pc.snippets ? "・抜粋補完" : "") + "）") :
+        (pc.part ? "・PART " + pc.part.k + "/" + pc.part.n + "（続きあり。そのチャットに「次」と送ってください）" : "・RESULT_COMPLETE行なし（途中で切れている可能性。そのチャットに「次」と送ってください）");
+      /* Source Re-check WPはC行を返さずV行だけを返す設計（フルKIT §14）。
+         V行があるのにC/S/N件数だけを表示すると「0件」ばかりに見えて
+         完結した結果が失敗のように映るため、V行がある場合だけ内訳に加える */
+      var lbl = (pc.wpId ? pc.wpId + ": " : "") + "資料 " + pc.s + "件・主張 " + pc.c + "件・未確認 " + pc.n + "件" +
+        (pc.v ? "・検証 " + pc.v + "件" : "") + completeLabel;
+      var envWp = pc.wpId ? findWp(pc.wpId) : null;
+      if (envWp) { pc.wpId = envWp.wpId; /* カードのdata-wp属性と一致する保存形へ揃える */
+        envWp.precheck = { s: pc.s, c: pc.c, n: pc.n, v: pc.v, complete: pc.complete, addendum: pc.addendum, snippets: pc.snippets, at: Date.now() };
+        if (pc.complete) { envWp.status = "done"; envWp.startedAt = 0; }
+        else if (envWp.status === "todo") envWp.status = "running";
+        save(); renderWps();
+        /* 貼り付けた内容の保持は renderWps() 側のスナップショット/復元に一本化した
+           （複数カードへ順番に貼っても、他カードの内容が消えなくなる） */
+      }
+      showIngestResults([{ ok: pc.complete, level: pc.complete ? (pc.weak ? "warn" : "ok") : "warn", wpId: pc.wpId, label: lbl,
+        detail: "この内容は最初のチャットへ貼り付けてください。このページは件数の確認だけを行います。" + (pc.weak ? " 区切りの少ない行 " + pc.weak + " 件。" : "") + (pc.other ? " 形式外の行 " + pc.other + " 件。" : "") }]);
+      return kind;
+    }
+    if (kind === "envelope") {
+      var wps = parseDispatch(text);
+      if (!wps.length) {
+        parseMsg.textContent = "調査プロンプトが見つかりませんでした。最初のチャットの応答を「【1/N】」の見出しとコードブロックを含めて丸ごと貼り付けてください。";
+        return kind;
+      }
+      importWps(wps);
+      save(); renderWps();
+      parseMsg.textContent = wps.length + "本の調査プロンプトを取り込みました（合計 " + state.wps.length + " 本）。";
+      inputDispatch.value = "";
+      return kind;
+    }
+    if (kind === "prose") {
+      /* 2026-09-03(実走前監査・A-3): フル版はレポート形式での貼り戻しが既定になった
+         （§7.3）。以前の「一覧」誘導は出典URLが少ない場合の補助経路でしかないため、
+         標準の案内をレポートのそのまま貼り付けに変更し、カードもここでdoneにする
+         （従来はRESULT_COMPLETE行が無いprose貼付では進捗が0のまま止まっていた）。
+         2026-09-03(完成前の最終洗い出し・C5): この「これで正常です」はWPカード側の
+         貼り付けだけで出すべき判定で、opts.wpHintが無いパネル1（Envelope貼付欄）から
+         proseと誤判定された場合（Envelopeの記述ドリフト等）にも同じ緑を返していた。
+         wpHintが無いときはEnvelopeが読めなかった旨のwarnに落とす */
+      if (opts.wpHint) {
+        /* 2026-09-03(バグ再修正・A14): URLを1つ含むだけの短い文章（エラーメッセージ等）
+           でもカードが「完了」になっていた。レポートらしい分量（URL3個以上または
+           400字以上）がある場合だけ状態を進める */
+        var proseText = String(text || "");
+        var looksLikeReport = (proseText.match(/https?:\/\//g) || []).length >= 3 || proseText.length >= 400;
+        if (looksLikeReport) {
+          var envWpProse = findWp(opts.wpHint);
+          if (envWpProse) { envWpProse.status = "done"; envWpProse.startedAt = 0; save(); renderWps(); }
+        }
+        showIngestResults([{ ok: looksLikeReport, level: looksLikeReport ? "ok" : "warn", wpId: opts.wpHint, label: looksLikeReport ? "これで正常です（このページでは取り込みません）" : "レポートとして短すぎます", detail: "このレポートを丸ごと最初のチャットへそのまま貼ってください。最初のチャットが行形式に変換します。出典URLがほとんど無い場合だけ、最初のチャットが「" + RESULT_TRIGGER + "」を案内します。" }]);
+      } else {
+        showIngestResults([{ ok: false, level: "warn", wpId: "", label: "Envelopeが読めませんでした", detail: "調査結果のレポートなら、このページではなく最初のチャットへそのまま貼ってください。最初のチャットの応答（調査プロンプトのEnvelope）を貼る場合は「【1/N】」の見出しとコードブロックを含めて丸ごと貼り付けてください。" }]);
+      }
+      /* 2026-09-03(バグ再修正・A14): 実際に貼り付けた入力欄だけを空にする。
+         opts.sourceElを無視してinputDispatchを常に空にすると、WPカードへ貼った
+         ときにパネル1の下書きが無関係に消えていた */
+      if (opts.sourceEl === inputDispatch) inputDispatch.value = "";
+      return kind;
+    }
+    showIngestResults([{ ok: false, level: "bad", wpId: opts.wpHint || "", label: "内容を判別できませんでした", detail: "最初のチャットが返した調査プロンプトの応答か、調査チャットに「" + RESULT_TRIGGER + "」と送って出てきた結果を貼り付けてください。完成したレポートは レポートビューア へ貼り付けてください。" }]);
+    return kind;
+  }
+
+  /* =====================================================================
+     8. イベント
+     ===================================================================== */
+  parseBtn.addEventListener("click", function () { handleRouted(inputDispatch.value, { sourceEl: null }); });
+  inputDispatch.addEventListener("paste", function () {
+    setTimeout(function () { if (inputDispatch.value.trim()) handleRouted(inputDispatch.value, { sourceEl: inputDispatch }); }, 0);
+  });
+
+  resetBtn.addEventListener("click", function () {
+    if (!window.confirm("このブラウザに保存された調査プロンプトの一覧をすべて消します。よろしいですか？")) return;
+    state = { researchId: "", wps: [] };
+    try { localStorage.removeItem(STORAGE_KEY); } catch (e) { /* ignore */ }
+    parseMsg.textContent = "";
+    $("ingest-list").innerHTML = "";
+    renderWps();
+  });
+
+  wpGrid.addEventListener("click", function (ev) {
+    var btn = ev.target.closest("button[data-act]");
+    if (!btn) return;
+    var wp = wpOf(btn);
+    if (!wp) return;
+    var act = btn.getAttribute("data-act");
+    if (act === "copy") {
+      copyText(wp.text, btn, "コピーしました。新しいチャットへ");
+      var url = chatTargetUrl();
+      if (url) { try { window.open(url, "_blank", "noopener"); } catch (e) { /* ブロック時は個別リンクから */ } }
+      if (wp.status === "todo") {
+        wp.status = "running"; wp.startedAt = Date.now(); save();
+        var card = btn.closest(".wp-card");
+        if (card) {
+          card.setAttribute("data-status", "running");
+          var sel0 = card.querySelector("select[data-act='status']");
+          if (sel0) sel0.value = "running";
+          var el0 = card.querySelector(".wp-elapsed");
+          if (el0) el0.textContent = elapsedText(wp);
+        }
+      }
+    } else if (act === "json") {
+      copyText(RESULT_TRIGGER, btn, "「" + RESULT_TRIGGER + "」をコピーしました");
+    }
+  });
+
+  wpGrid.addEventListener("change", function (ev) {
+    var sel = ev.target.closest("select[data-act='status']");
+    if (!sel) return;
+    var wp = wpOf(sel);
+    if (!wp) return;
+    wp.status = sel.value;
+    if (wp.status === "running" && !wp.startedAt) wp.startedAt = Date.now();
+    if (wp.status !== "running") wp.startedAt = 0;
+    save();
+    var card = sel.closest(".wp-card");
+    if (card) {
+      card.setAttribute("data-status", wp.status);
+      var el = card.querySelector(".wp-elapsed");
+      if (el) el.textContent = elapsedText(wp);
+    }
+  });
+
+  wpGrid.addEventListener("paste", function (ev) {
+    var ta = ev.target.closest("textarea.wp-result");
+    if (!ta) return;
+    var hint = ta.getAttribute("data-wp") || "";
+    setTimeout(function () { if (ta.value.trim()) handleRouted(ta.value, { wpHint: hint, sourceEl: ta }); }, 0);
+  });
+
+  /* ---------- 開くAIの選択（このブラウザに保持） ---------- */
+  function chatTargetUrl() { return chatTarget ? chatTarget.value : "https://chatgpt.com/"; }
+  if (chatTarget) {
+    try {
+      var savedTarget = localStorage.getItem(CHAT_TARGET_KEY);
+      if (savedTarget !== null && Array.prototype.some.call(chatTarget.options, function (o) { return o.value === savedTarget; })) {
+        chatTarget.value = savedTarget;
+      }
+    } catch (e) { /* 読めない環境では既定（ChatGPT）のまま */ }
+    chatTarget.addEventListener("change", function () {
+      try { localStorage.setItem(CHAT_TARGET_KEY, chatTarget.value); } catch (e) { /* ignore */ }
+    });
+  }
+
+  setInterval(function () { if (state.wps.some(function (w) { return w.status === "running"; })) updateElapsed(); }, 60000);
+
+  /* URLが …dispatch.html#paste のときだけ、クリップボードの内容を読んで自動取り込みする。
+     Main Chatの応答（MODE: WORKERを含む）でなければ何もせず、案内だけ出す
+     （他人のクリップボードの中身を画面に出さないため） */
+  function tryClipboardPaste() {
+    if ((location.hash || "").toLowerCase() !== "#paste") return;
+    var hint = function () {
+      if (!pasteHint) return;
+      pasteHint.hidden = false;
+      pasteHint.textContent = "クリップボードからの自動読み込みはできませんでした。上のボックスに貼り付けてください（Ctrl+V／⌘+V）。";
+    };
+    if (!(navigator.clipboard && navigator.clipboard.readText)) { hint(); return; }
+    navigator.clipboard.readText().then(function (t) {
+      if (t && RE_WORKER_ANY.test(t)) {
+        inputDispatch.value = t;
+        handleRouted(t, { sourceEl: inputDispatch });
+      } else {
+        hint();
+      }
+    }, hint);
+  }
+
+  /* =====================================================================
+     9. テストフック
+     ===================================================================== */
+  window.RRWB = Object.freeze({
+    getState: function () { return state; },
+    resetAll: function () { state = { researchId: "", wps: [] }; },
+    parseDispatch: parseDispatch,
+    importWps: importWps,
+    parseEnvelopeMeta: parseEnvelopeMeta,
+    routePaste: routePaste,
+    handleRouted: handleRouted,
+    precheckLines: precheckLines,
+    cleanWpId: cleanWpId,
+    RESULT_TRIGGER: RESULT_TRIGGER,
+    save: save,
+    load: load,
+    renderAll: renderWps
+  });
+
+  cleanupLegacyKeys();
+  load();
+  renderWps();
+  tryClipboardPaste();
+})();
+</script>
+
+</body>
+</html>
