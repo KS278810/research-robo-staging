@@ -1,0 +1,16 @@
+# GitLab Pages への公開ジョブ（テストは実行しない。GitHub上では無視される）。
+# image: を指定せず、Runnerの既定イメージ/shell executorで動く
+# （社内で外部コンテナレジストリに出られない環境を想定）。
+pages:
+  stage: deploy
+  script:
+    - rm -rf public && mkdir -p public/assets
+    - cp index.html viewer.html dispatch.html README.md LICENSE llms.txt robots.txt sitemap.xml public/
+    - cp RESEARCH_KIT_v5.2.md RESEARCH_KIT_latest.md RESEARCH_KIT_lite_v1.0.md RESEARCH_KIT_lite_latest.md public/
+    - cp benchmark-report-sample.pdf REPORT_STYLE_SYNTHETIC.pdf public/
+    - cp -r assets/. public/assets/
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH

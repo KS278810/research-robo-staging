@@ -1,0 +1,23 @@
+# イメージに絶対に入れないもの（開発資産・非公開ファイル）。
+# hosting/Dockerfile はホワイトリストCOPYなのでこれが読まれなくても混入しないが、
+# ビルドコンテキスト転送量を減らすため明示しておく。
+dev/
+work2.md
+CLAUDE.md
+.git/
+.gitignore
+*.bak
+.gitlab-ci.yml
+.dockerignore
+.nojekyll
+**/.DS_Store
+**/Thumbs.db
+
+# hosting/ 配下は道具自体を配信しない。ただしDockerfileが読むnginx.confだけは除外しない
+# （ディレクトリ丸ごとの除外に対する否定パターンはDockerビルダーの実装によって挙動が
+# 割れるため、個別ファイルを列挙する安全な形にしている）
+hosting/Dockerfile
+hosting/compose.yaml
+hosting/serve.py
+hosting/check.sh
+hosting/README-hosting.md
