@@ -1,0 +1,6 @@
+work2.md
+dev/
+CLAUDE.md
+*.bak
+hosting/.env
+__pycache__/
