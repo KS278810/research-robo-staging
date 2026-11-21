@@ -1,0 +1,20 @@
+# 使い方:
+#   cd hosting && docker compose up -d --build
+#   ポート変更: RR_PORT=9000 docker compose up -d --build  （または hosting/.env に RR_PORT=9000）
+#   更新: git pull && docker compose up -d --build
+#   停止: docker compose down
+services:
+  research-robo:
+    build:
+      context: ..
+      dockerfile: hosting/Dockerfile
+    image: research-robo:local
+    container_name: research-robo
+    ports:
+      - "${RR_PORT:-8080}:80"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1/healthz"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
